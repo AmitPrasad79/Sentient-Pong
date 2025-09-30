@@ -1,40 +1,38 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sentient Pong</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sentient Pong</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<canvas id="gameCanvas" width="800" height="600"></canvas>
+  <canvas id="gameCanvas" width="800" height="600"></canvas>
 
+  <div id="overlay">
+    <h1>Sentient Pong</h1>
+    <div>
+      <label for="mode">Mode:</label>
+      <select id="mode">
+        <option value="ai">Single Player (AI)</option>
+        <option value="multiplayer">Multiplayer</option>
+      </select>
+    </div>
+    <div>
+      <label for="speed">Speed:</label>
+      <select id="speed">
+        <option value="easy">Easy</option>
+        <option value="normal" selected>Normal</option>
+        <option value="hard">Hard</option>
+      </select>
+    </div>
+    <button id="startBtn">Start Game</button>
+    <div id="gameOver" style="display:none; margin-top:20px;">
+      <h2 id="winner"></h2>
+      <button id="restartBtn">Play Again</button>
+    </div>
+  </div>
 
-<div id="overlay">
-<h1>Sentient Pong</h1>
-<div>
-<label for="mode">Mode:</label>
-<select id="mode">
-<option value="ai">Single Player (AI)</option>
-<option value="multiplayer">Multiplayer</option>
-</select>
-</div>
-<div>
-<label for="speed">Speed:</label>
-<select id="speed">
-<option value="easy">Easy</option>
-<option value="normal" selected>Normal</option>
-<option value="hard">Hard</option>
-</select>
-</div>
-<button id="startBtn">Start Game</button>
-<div id="gameOver" style="display:none; margin-top:20px;">
-<h2 id="winner"></h2>
-<button id="restartBtn">Play Again</button>
-</div>
-</div>
-
-
-<script src="game.js"></script>
+  <script src="game.js"></script>
 </body>
 </html>
