@@ -75,3 +75,63 @@ document.addEventListener("DOMContentLoaded", () => {
       ballY + ballSize >= rightPaddleY &&
       ballY <= rightPaddleY + paddleHeight
     ) ballSpeedX = -ballSpeedX;
+    
+
+    if (ballX < 0) {
+      rightScore++;
+      resetBallPosition();
+    }
+    if (ballX + ballSize > canvas.width) {
+      leftScore++;
+      resetBallPosition();
+    }
+
+    if (mode === "ai") {
+      let targetY = ballY - paddleHeight / 2 + ballSize / 2;
+      let diff = targetY - rightPaddleY;
+      rightPaddleY += diff * 0.15;
+    }
+
+    if (leftScore >= 3 || rightScore >= 3) {
+      gameRunning = false;
+      document.getElementById("gameOver").style.display = "block";
+      document.getElementById("winner").innerText =
+        leftScore >= 3 ? "Player Wins!" : "AI Wins!";
+    } else {
+      requestAnimationFrame(draw);
+    }
+  }
+
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowUp" && leftPaddleY > 0) leftPaddleY -= paddleSpeed;
+    if (e.key === "ArrowDown" && leftPaddleY + paddleHeight < canvas.height)
+      leftPaddleY += paddleSpeed;
+
+    if (mode === "multiplayer") {
+      if (e.key === "w" && rightPaddleY > 0) rightPaddleY -= paddleSpeed;
+      if (e.key === "s" && rightPaddleY + paddleHeight < canvas.height)
+        rightPaddleY += paddleSpeed;
+    }
+  });
+
+  document.getElementById("startBtn").addEventListener("click", () => {
+    document.getElementById("overlay").style.display = "none";
+    document.getElementById("gameOver").style.display = "none";
+
+    mode = document.getElementById("mode").value;
+    let selectedSpeed = document.getElementById("speed").value;
+
+    ballSpeedX = speeds[selectedSpeed].ballX * (Math.random() > 0.5 ? 1 : -1);
+    ballSpeedY = speeds[selectedSpeed].ballY * (Math.random() > 0.5 ? 1 : -1);
+
+    leftScore = 0;
+    rightScore = 0;
+    gameRunning = true;
+    requestAnimationFrame(draw);
+  });
+
+  document.getElementById("restartBtn").addEventListener("click", () => {
+    document.getElementById("overlay").style.display = "flex";
+  });
+});
+
