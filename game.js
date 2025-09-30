@@ -75,20 +75,19 @@ rightPaddleY += paddleSpeed;
 });
 
 
-document.getElementById("startBtn").addEventListener("click", () => {
-document.getElementById("overlay").style.display = "none";
+document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("startBtn").addEventListener("click", () => {
+        document.getElementById("overlay").style.display = "none";
 
+        mode = document.getElementById("mode").value;
+        let selectedSpeed = document.getElementById("speed").value;
 
-mode = document.getElementById("mode").value;
-let selectedSpeed = document.getElementById("speed").value;
+        ballSpeedX = speeds[selectedSpeed].ballX * (Math.random() > 0.5 ? 1 : -1);
+        ballSpeedY = speeds[selectedSpeed].ballY * (Math.random() > 0.5 ? 1 : -1);
 
-
-ballSpeedX = speeds[selectedSpeed].ballX * (Math.random() > 0.5 ? 1 : -1);
-ballSpeedY = speeds[selectedSpeed].ballY * (Math.random() > 0.5 ? 1 : -1);
-
-
-if (!gameRunning) {
-gameRunning = true;
-requestAnimationFrame(draw);
-}
+        if (!gameRunning) {
+            gameRunning = true;
+            requestAnimationFrame(draw);
+        }
+    });
 });
