@@ -1,0 +1,467 @@
+<!--
+Sentient Pong - single-file HTML project
+A to Z: game, styles, controls, and usage instructions are all in this file.
+
+How to use:
+1. Save this file as `index.html`.
+2. Create a GitHub repo and push this file to the root.
+   - Or drag-and-drop to GitHub web editor and commit.
+3. Open the file in a browser or enable GitHub Pages to host.
+4. To use your dog photo as the ball: click "Upload Ball Image" and pick the image; the game will use it and auto-scale.
+
+Features:
+- Countdown start (3..2..1..Go!)
+- Single-player (AI) and 2-player local modes
+- Difficulty setting for AI
+- Paddle touch (mouse / touch) control and keyboard
+- Pause, Restart, and Sound on/off
+- Nice UI, shadow, and responsive canvas
+- Save high score to localStorage
+
+Notes:
+- All assets are in-memory. If you want to include a permanent image in repo, create an `assets/` folder and set `defaultBallPath`.
+- This file is MIT-licensed. Use and modify freely.
+-->
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Sentient Pong — Remixable</title>
+  <style>
+    :root{
+      --bg:#0b1020; --card:#0f1724; --accent:#7ee787; --muted:#97a0b6; --glass: rgba(255,255,255,0.03);
+      --glass-2: rgba(255,255,255,0.02);
+    }
+    html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,'Helvetica Neue',Arial}
+    body{background:linear-gradient(180deg,#05060a 0%, #08111f 60%); color:#dfe7ff; display:flex; align-items:center; justify-content:center;}
+    .app{width:100%;max-width:1100px;margin:28px;padding:20px;border-radius:16px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));box-shadow:0 10px 30px rgba(2,6,23,0.6);display:grid;grid-template-columns:1fr 360px;gap:20px}
+    header{grid-column:1/-1;display:flex;align-items:center;gap:12px}
+    h1{font-size:20px;margin:0;color:var(--accent)}
+    p.lead{margin:0;color:var(--muted);font-size:13px}
+
+    .stage{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:12px;padding:12px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+    canvas{background:linear-gradient(180deg,#071025,#04101a);border-radius:8px;width:100%;height:640px;max-height:80vh;box-shadow:0 10px 30px rgba(2,6,23,0.7) inset;}
+
+    .sidebar{padding:16px;background:var(--card);border-radius:12px;display:flex;flex-direction:column;gap:12px}
+    label{font-size:13px;color:var(--muted)}
+    .controls{display:flex;flex-wrap:wrap;gap:8px}
+    button,select,input[type=range]{background:var(--glass);border:1px solid rgba(255,255,255,0.04);padding:8px 10px;border-radius:8px;color:#e6f3e9;cursor:pointer}
+    .small{padding:6px 8px;font-size:13px}
+    .muted{color:var(--muted);font-size:13px}
+    .file-row{display:flex;gap:8px;align-items:center}
+    .footer{margin-top:auto;font-size:12px;color:var(--muted)}
+    .scoreboard{display:flex;gap:12px;align-items:center}
+    .score{font-weight:700;font-size:28px;color:#fff;min-width:56px;text-align:center}
+    .meta{font-size:12px;color:var(--muted)}
+
+    .pill{background:var(--glass-2);padding:6px 8px;border-radius:999px;font-size:12px;color:var(--muted)}
+
+    @media (max-width:950px){.app{grid-template-columns:1fr;max-width:95vw}}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div style="flex:1">
+        <h1>Sentient Pong</h1>
+        <p class="lead">A polished, remixable Pong game — drop your dog photo to use as the ball 🐶</p>
+      </div>
+      <div class="pill">Made for GitHub — single file</div>
+    </header>
+
+    <section class="stage">
+      <canvas id="gameCanvas" width="900" height="640"></canvas>
+      <div style="display:flex;align-items:center;gap:16px;margin-top:12px;width:100%;justify-content:center">
+        <div class="scoreboard">
+          <div class="meta">Player</div>
+          <div id="leftScore" class="score">0</div>
+        </div>
+        <div class="muted">—</div>
+        <div class="scoreboard">
+          <div class="meta">CPU / Player 2</div>
+          <div id="rightScore" class="score">0</div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="sidebar">
+      <div>
+        <label>Mode</label>
+        <div class="controls" style="margin-top:8px">
+          <select id="modeSelect">
+            <option value="ai">Single Player (AI)</option>
+            <option value="local">Local 2-player</option>
+          </select>
+          <select id="difficulty">
+            <option value="0.92">Easy</option>
+            <option value="0.98" selected>Normal</option>
+            <option value="1.04">Hard</option>
+            <option value="1.15">Insane</option>
+          </select>
+          <button id="startBtn" class="small">Start</button>
+          <button id="pauseBtn" class="small">Pause</button>
+          <button id="resetBtn" class="small">Reset</button>
+        </div>
+      </div>
+
+      <div>
+        <label>Ball image</label>
+        <div class="file-row" style="margin-top:8px">
+          <input id="fileInput" type="file" accept="image/*">
+          <button id="resetBall" class="small">Use default</button>
+        </div>
+        <div id="ballInfo" class="muted" style="margin-top:8px">No image loaded: using clean ball circle</div>
+      </div>
+
+      <div>
+        <label>Controls</label>
+        <div class="muted" style="margin-top:8px">Mouse/Touch to move left paddle. In local 2-player, use W/S for left and Up/Down for right.</div>
+      </div>
+
+      <div>
+        <label>Options</label>
+        <div class="controls" style="margin-top:8px">
+          <button id="soundBtn" class="small">Sound: On</button>
+          <button id="vfxBtn" class="small">VFX: On</button>
+        </div>
+      </div>
+
+      <div>
+        <label>High score</label>
+        <div style="margin-top:8px" class="muted">Best margin (left - right): <strong id="bestScore">—</strong></div>
+      </div>
+
+      <div class="footer">Tip: to push to GitHub, simply create a new repo and upload this <code>index.html</code>. For GitHub Pages, enable it in repo settings to serve the game.</div>
+    </aside>
+  </div>
+
+  <script>
+  /* Sentient Pong — single file JavaScript
+     - Drop an image to use as the ball
+     - Clean architecture: Game object, Renderer, Input
+  */
+  (function(){
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    let W = canvas.width, H = canvas.height;
+
+    // UI elements
+    const startBtn = document.getElementById('startBtn');
+    const pauseBtn = document.getElementById('pauseBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const modeSelect = document.getElementById('modeSelect');
+    const difficulty = document.getElementById('difficulty');
+    const fileInput = document.getElementById('fileInput');
+    const resetBall = document.getElementById('resetBall');
+    const ballInfo = document.getElementById('ballInfo');
+    const leftScoreEl = document.getElementById('leftScore');
+    const rightScoreEl = document.getElementById('rightScore');
+    const bestScoreEl = document.getElementById('bestScore');
+    const soundBtn = document.getElementById('soundBtn');
+    const vfxBtn = document.getElementById('vfxBtn');
+
+    // Settings
+    const defaultBallPath = null; // use if you add "assets/dog.png"
+    let soundOn = true, vfxOn = true;
+
+    // Game state
+    const state = {
+      running:false, paused:false, mode:'ai', aiSkill:1.0, scoreLeft:0, scoreRight:0,
+      bestMargin: localStorage.getItem('sentientPongBest')||'—'
+    };
+    bestScoreEl.textContent = state.bestMargin;
+
+    // Entities
+    function makePaddle(x){
+      return {x:x, y:H/2 - 48, w:16, h:96, speed:800}
+    }
+    const left = makePaddle(28);
+    const right = makePaddle(W-44);
+
+    // Ball
+    const ball = {x:W/2, y:H/2, r:14, vx:380, vy:220, speed:520};
+    let ballImage = null; // Image object or null
+    let ballPattern = null;
+
+    // Audio (tiny WebAudio beep)
+    const audioCtx = (typeof AudioContext!=='undefined')?new AudioContext():null;
+    function beep(freq=440,dur=0.06,vol=0.05){
+      if(!soundOn || !audioCtx) return;
+      const o = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      o.type = 'sine'; o.frequency.value = freq;
+      g.gain.value = vol; o.connect(g); g.connect(audioCtx.destination);
+      o.start(); o.stop(audioCtx.currentTime + dur);
+    }
+
+    // Resize handling
+    function resizeCanvas(){
+      const ratio = canvas.width/canvas.height; // we keep logical size fixed
+      // nothing
+    }
+    window.addEventListener('resize', resizeCanvas);
+
+    // Input
+    let pointerY = null;
+    canvas.addEventListener('mousemove', (e)=>{ const r=canvas.getBoundingClientRect(); pointerY = (e.clientY - r.top) * (canvas.height / r.height);});
+    canvas.addEventListener('touchmove', (e)=>{ e.preventDefault(); const r=canvas.getBoundingClientRect(); const t=e.touches[0]; pointerY = (t.clientY - r.top) * (canvas.height / r.height); }, {passive:false});
+
+    document.addEventListener('keydown', (e)=>{
+      if(e.key===' '){ togglePause(); }
+      if(state.mode==='local'){
+        if(e.key==='w' || e.key==='W') left.y -= 28;
+        if(e.key==='s' || e.key==='S') left.y += 28;
+        if(e.key==='ArrowUp') right.y -= 28;
+        if(e.key==='ArrowDown') right.y += 28;
+      }
+    });
+
+    // Start / Pause / Reset
+    startBtn.addEventListener('click', ()=>{ if(!state.running) startGame(); else resumeGame(); });
+    pauseBtn.addEventListener('click', togglePause);
+    resetBtn.addEventListener('click', resetGame);
+
+    modeSelect.addEventListener('change', ()=>{ state.mode = modeSelect.value; });
+    difficulty.addEventListener('change', ()=>{ state.aiSkill = parseFloat(difficulty.value); });
+    soundBtn.addEventListener('click', ()=>{ soundOn = !soundOn; soundBtn.textContent = 'Sound: ' + (soundOn? 'On':'Off'); if(soundOn && audioCtx && audioCtx.state==='suspended') audioCtx.resume(); });
+    vfxBtn.addEventListener('click', ()=>{ vfxOn = !vfxOn; vfxBtn.textContent = 'VFX: ' + (vfxOn? 'On':'Off'); });
+
+    // File input for ball image
+    fileInput.addEventListener('change', async (e)=>{
+      const f = e.target.files && e.target.files[0];
+      if(!f) return;
+      const img = new Image();
+      img.onload = ()=>{ ballImage = img; ballPattern = null; ballInfo.textContent = 'Custom ball image loaded: ' + f.name; scaleBallForImage(); };
+      img.onerror = ()=>{ ballImage = null; ballInfo.textContent = 'Could not load image — using default'; }
+      img.src = URL.createObjectURL(f);
+    });
+    resetBall.addEventListener('click', ()=>{ ballImage = null; ballPattern = null; ballInfo.textContent = 'No image loaded: using clean ball circle'; });
+
+    function scaleBallForImage(){
+      if(!ballImage) return;
+      // scale ball radius to ~10% of canvas short side, but not too big
+      const short = Math.min(W,H);
+      ball.r = Math.max(10, Math.min(48, Math.round(short * 0.045)));
+      // create pattern for nicer rendering on repeated draws
+      const tmp = document.createElement('canvas'); tmp.width = tmp.height = ball.r*2; const tctx = tmp.getContext('2d');
+      // draw image inside tmp
+      tctx.save(); tctx.beginPath(); tctx.arc(ball.r, ball.r, ball.r, 0, Math.PI*2); tctx.closePath(); tctx.clip();
+      // cover and center
+      const ar = ballImage.width/ballImage.height;
+      let dw = tmp.width, dh = tmp.height, sx=0, sy=0, sw=ballImage.width, sh=ballImage.height;
+      // draw image scaled to fill circle
+      tctx.drawImage(ballImage, 0, 0, ballImage.width, ballImage.height, 0, 0, dw, dh);
+      ballPattern = ctx.createPattern(tmp, 'no-repeat');
+    }
+
+    // Physics helpers
+    function resetBall(direction){
+      ball.x = W/2; ball.y = H/2;
+      const angle = (Math.random()*Math.PI/3) - Math.PI/6; // -30 to 30 degrees
+      const speed = 520;
+      const dir = (direction===1)?1:(direction===-1?-1:(Math.random() < 0.5 ? -1 : 1));
+      ball.vx = dir * Math.cos(angle) * speed;
+      ball.vy = Math.sin(angle) * speed;
+    }
+
+    // collisions
+    function rectCircleCollide(r, c){
+      // r: paddle, c: ball
+      const closestX = Math.max(r.x, Math.min(c.x, r.x + r.w));
+      const closestY = Math.max(r.y, Math.min(c.y, r.y + r.h));
+      const dx = c.x - closestX;
+      const dy = c.y - closestY;
+      return (dx*dx + dy*dy) < (c.r*c.r);
+    }
+
+    // AI: predictive with skill factor
+    function aiMove(dt){
+      const predictFactor = state.aiSkill; // >1 means more perfect
+      // Predict where ball will be horizontally passing the right paddle using simple reflection
+      if(ball.vx <= 0) {
+        // ball moving away — return to center slowly
+        const target = H/2 - right.h/2;
+        right.y += (target - right.y) * Math.min(1, 3 * dt);
+        return;
+      }
+      // time to reach paddle x
+      const dx = (right.x - ball.x - ball.r);
+      const t = dx / ball.vx;
+      let predictedY = ball.y + ball.vy * t;
+      // reflect off top/bottom as many times needed
+      const h = H;
+      if(predictedY < 0 || predictedY > h){
+        // reflect formula for infinite reflections
+        const mod = Math.abs(predictedY) % (2*h);
+        predictedY = mod > h ? (2*h - mod) : mod;
+      }
+      // move towards predicted center with speed scaled by skill
+      const target = predictedY - right.h/2;
+      const diff = target - right.y;
+      right.y += diff * Math.min(1, Math.abs(state.aiSkill - 1) * dt * 6 + 0.02);
+    }
+
+    // Game loop
+    let last = performance.now();
+    function tick(now){
+      const dt = Math.min(0.03, (now - last)/1000); // clamp
+      last = now;
+      if(state.running && !state.paused){ update(dt); }
+      render();
+      requestAnimationFrame(tick);
+    }
+
+    function update(dt){
+      // move left paddle via pointer
+      if(pointerY != null){ left.y = pointerY - left.h/2; }
+      // clamp paddles
+      left.y = Math.max(8, Math.min(H - left.h - 8, left.y));
+      right.y = Math.max(8, Math.min(H - right.h - 8, right.y));
+
+      // local second player keyboard is applied in keydown; do nothing else
+      if(state.mode === 'ai') aiMove(dt);
+
+      // integrate ball
+      ball.x += ball.vx * dt;
+      ball.y += ball.vy * dt;
+
+      // top/bottom bounce
+      if(ball.y - ball.r < 8){ ball.y = 8 + ball.r; ball.vy *= -1; beep(600,0.03,0.04); }
+      if(ball.y + ball.r > H - 8){ ball.y = H - 8 - ball.r; ball.vy *= -1; beep(600,0.03,0.04); }
+
+      // paddle collisions
+      if(ball.vx < 0 && rectCircleCollide(left, ball)){
+        // reflect
+        ball.x = left.x + left.w + ball.r + 0.1;
+        const hitPos = (ball.y - (left.y + left.h/2)) / (left.h/2);
+        const angle = hitPos * Math.PI/3; // +-60deg
+        const speed = Math.min(1200, Math.hypot(ball.vx, ball.vy) * 1.05);
+        ball.vx = Math.cos(angle) * speed;
+        ball.vy = Math.sin(angle) * speed;
+        // nudge to the right
+        if(vfxOn) flash(20);
+        beep(800,0.04,0.06);
+      }
+      if(ball.vx > 0 && rectCircleCollide(right, ball)){
+        ball.x = right.x - ball.r - 0.1;
+        const hitPos = (ball.y - (right.y + right.h/2)) / (right.h/2);
+        const angle = Math.PI - (hitPos * Math.PI/3); // reflect
+        const speed = Math.min(1200, Math.hypot(ball.vx, ball.vy) * 1.05);
+        ball.vx = -Math.cos(hitPos * Math.PI/3) * speed; // keep sign
+        ball.vy = Math.sin(hitPos * Math.PI/3) * speed;
+        if(vfxOn) flash(20);
+        beep(700,0.04,0.06);
+      }
+
+      // score left/right
+      if(ball.x < -40){ // right scores
+        state.scoreRight += 1; rightScoreEl.textContent = state.scoreRight;
+        beep(220,0.2,0.08);
+        updateBest();
+        resetBall(1);
+      }
+      if(ball.x > W + 40){ // left scores
+        state.scoreLeft += 1; leftScoreEl.textContent = state.scoreLeft;
+        beep(330,0.2,0.08);
+        updateBest();
+        resetBall(-1);
+      }
+    }
+
+    function updateBest(){
+      const margin = state.scoreLeft - state.scoreRight;
+      const prev = localStorage.getItem('sentientPongBestVal');
+      if(prev === null || margin > parseInt(prev)){
+        localStorage.setItem('sentientPongBestVal', margin);
+        localStorage.setItem('sentientPongBest', margin.toString());
+        bestScoreEl.textContent = margin.toString();
+      }
+    }
+
+    // simple flash effect
+    let flashAlpha = 0;
+    function flash(strength){ flashAlpha = Math.max(flashAlpha, strength/100); }
+    function render(){
+      // background
+      ctx.clearRect(0,0,W,H);
+      // subtle vignette
+      const grad = ctx.createLinearGradient(0,0,0,H);
+      grad.addColorStop(0,'rgba(255,255,255,0.02)');
+      grad.addColorStop(1,'rgba(0,0,0,0.1)');
+      ctx.fillStyle = grad; ctx.fillRect(0,0,W,H);
+
+      // center dashed line
+      ctx.save(); ctx.strokeStyle = 'rgba(255,255,255,0.06)'; ctx.lineWidth = 2; ctx.setLineDash([12,12]);
+      ctx.beginPath(); ctx.moveTo(W/2, 10); ctx.lineTo(W/2, H-10); ctx.stroke(); ctx.restore();
+
+      // paddles
+      drawRoundedRect(left.x, left.y, left.w, left.h, 8, 'rgba(255,255,255,0.06)');
+      drawRoundedRect(right.x, right.y, right.w, right.h, 8, 'rgba(255,255,255,0.06)');
+
+      // glow behind paddles
+      drawGlow(left.x + left.w/2, left.y + left.h/2, left.h*0.6);
+      drawGlow(right.x + right.w/2, right.y + right.h/2, right.h*0.6);
+
+      // ball
+      ctx.save();
+      if(ballPattern){ ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI*2); ctx.closePath(); ctx.fillStyle = ballPattern; ctx.fill(); }
+      else{
+        // draw default circle with inner sheen
+        const g = ctx.createRadialGradient(ball.x - ball.r*0.3, ball.y - ball.r*0.3, ball.r*0.2, ball.x, ball.y, ball.r);
+        g.addColorStop(0,'#ffffff'); g.addColorStop(0.35,'#e6ffe6'); g.addColorStop(1,'#6fcf6f');
+        ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI*2); ctx.closePath(); ctx.fillStyle = g; ctx.fill();
+      }
+      // stroke
+      ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(0,0,0,0.15)'; ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI*2); ctx.stroke();
+      ctx.restore();
+
+      // score overlay
+      ctx.fillStyle = 'rgba(255,255,255,0.02)';
+      if(flashAlpha>0){ ctx.fillStyle = 'rgba(255,255,255,'+ (flashAlpha*0.15) +')'; flashAlpha *= 0.85; }
+      ctx.fillRect(0,0,W,H);
+    }
+
+    function drawRoundedRect(x,y,w,h,r,fill){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); ctx.fillStyle = fill; ctx.fill(); }
+    function drawGlow(cx,cy,size){ ctx.save(); const g = ctx.createRadialGradient(cx,cy,1,cx,cy,size); g.addColorStop(0,'rgba(126,231,135,0.12)'); g.addColorStop(1,'rgba(126,231,135,0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx,cy,size,0,Math.PI*2); ctx.fill(); ctx.restore(); }
+
+    // control flow
+    function startGame(){ state.running = true; state.paused = false; state.scoreLeft = 0; state.scoreRight = 0; leftScoreEl.textContent = '0'; rightScoreEl.textContent = '0'; resetBall(); // countdown feel
+      countdownAndGo(); }
+    function resumeGame(){ state.paused = false; }
+    function togglePause(){ state.paused = !state.paused; pauseBtn.textContent = state.paused? 'Resume':'Pause'; }
+    function resetGame(){ state.running = false; state.paused = false; state.scoreLeft = 0; state.scoreRight = 0; leftScoreEl.textContent='0'; rightScoreEl.textContent='0'; resetBall(); }
+
+    // countdown
+    async function countdownAndGo(){
+      state.paused = true;
+      const overlay = document.createElement('div'); overlay.style.position='absolute'; overlay.style.left='0'; overlay.style.top='0'; overlay.style.width='100%'; overlay.style.height='100%'; overlay.style.pointerEvents='none'; overlay.style.display='flex'; overlay.style.alignItems='center'; overlay.style.justifyContent='center'; overlay.style.flexDirection='column';
+      overlay.style.transition='opacity 0.3s';
+      document.body.appendChild(overlay);
+      let num=3; while(num>0){ renderCountdown(num); beep(440,0.08,0.06); await wait(650); num--; }
+      renderCountdown('Go!'); beep(880,0.12,0.08); await wait(420);
+      overlay.remove(); state.paused = false; }
+
+    function renderCountdown(txt){
+      // draw big translucent text on top of canvas
+      ctx.save(); ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(0,0,W,H);
+      ctx.fillStyle = 'rgba(255,255,255,0.95)'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.font='bold 96px ui-sans-serif'; ctx.fillText(txt, W/2, H/2);
+      ctx.restore();
+    }
+
+    function wait(ms){ return new Promise(res=>setTimeout(res, ms)); }
+
+    // initial
+    resetBall(); last = performance.now(); requestAnimationFrame(tick);
+
+    // small helpers
+    function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
+
+    // expose for debugging
+    window._SP = {state, left, right, ball, resetBall};
+
+  })();
+  </script>
+</body>
+</html>
