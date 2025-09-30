@@ -1,172 +1,42 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sentient Pong</title>
-  <style>
-    body {
-      margin: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      background: #111;
-      color: #fff;
-      font-family: Arial, sans-serif;
-      overflow: hidden;
-    }
-    canvas {
-      border: 2px solid #fff;
-      background: #000;
-    }
-    #overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.7);
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      font-size: 2rem;
-      z-index: 10;
-    }
-    button {
-      margin-top: 20px;
-      padding: 10px 20px;
-      font-size: 1rem;
-      cursor: pointer;
-      border: none;
-      border-radius: 5px;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sentient Pong</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <canvas id="gameCanvas" width="800" height="600"></canvas>
-  <div id="overlay">
-    <div>Sentient Pong</div>
-    <button onclick="startGame()">Start Game</button>
-  </div>
+<canvas id="gameCanvas" width="800" height="600"></canvas>
 
-  <script>
-    const canvas = document.getElementById("gameCanvas");
-    const ctx = canvas.getContext("2d");
-    
-    let paddleHeight = 100;
-    let paddleWidth = 10;
-    let leftPaddleY = (canvas.height - paddleHeight) / 2;
-    let rightPaddleY = (canvas.height - paddleHeight) / 2;
-    let paddleSpeed = 8;
 
-    let ballSize = 30;
-    let ballX = canvas.width / 2;
-    let ballY = canvas.height / 2;
-    let ballSpeedX = 5;
-    let ballSpeedY = 3;
+<div id="overlay">
+<h1>Sentient Pong</h1>
 
-    let leftScore = 0;
-    let rightScore = 0;
 
-    let dogImage = new Image();
-    dogImage.src = "dog.png"; // Use your PNG file here
+<div>
+<label for="mode">Mode:</label>
+<select id="mode">
+<option value="ai">Single Player (AI)</option>
+<option value="multiplayer">Multiplayer (2 Players)</option>
+</select>
+</div>
 
-    let gameRunning = false;
 
-    function drawPaddle(x, y) {
-      ctx.fillRect(x, y, paddleWidth, paddleHeight);
-    }
+<div>
+<label for="speed">Speed:</label>
+<select id="speed">
+<option value="easy">Easy</option>
+<option value="normal" selected>Normal</option>
+<option value="hard">Hard</option>
+</select>
+</div>
 
-    function drawBall() {
-      ctx.drawImage(dogImage, ballX, ballY, ballSize, ballSize);
-    }
 
-    function resetBallPosition() {
-      ballX = canvas.width / 2;
-      ballY = canvas.height / 2;
-      ballSpeedX = -ballSpeedX;
-      ballSpeedY = 3 * (Math.random() > 0.5 ? 1 : -1);
-    }
+<button onclick="startGame()">Start Game</button>
+</div>
 
-    function draw() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Draw paddles
-      ctx.fillStyle = "white";
-      drawPaddle(0, leftPaddleY);
-      drawPaddle(canvas.width - paddleWidth, rightPaddleY);
-
-      // Draw ball
-      drawBall();
-
-      // Draw scores
-      ctx.font = "20px Arial";
-      ctx.fillText(leftScore, canvas.width / 4, 20);
-      ctx.fillText(rightScore, (3 * canvas.width) / 4, 20);
-
-      // Move ball
-      ballX += ballSpeedX;
-      ballY += ballSpeedY;
-
-      // Collisions with top/bottom
-      if (ballY <= 0 || ballY + ballSize >= canvas.height) {
-        ballSpeedY = -ballSpeedY;
-      }
-
-      // Collisions with paddles
-      if (
-        ballX <= paddleWidth &&
-        ballY + ballSize >= leftPaddleY &&
-        ballY <= leftPaddleY + paddleHeight
-      ) {
-        ballSpeedX = -ballSpeedX;
-      }
-      if (
-        ballX + ballSize >= canvas.width - paddleWidth &&
-        ballY + ballSize >= rightPaddleY &&
-        ballY <= rightPaddleY + paddleHeight
-      ) {
-        ballSpeedX = -ballSpeedX;
-      }
-
-      // Scoring
-      if (ballX < 0) {
-        rightScore++;
-        resetBallPosition();
-      }
-      if (ballX + ballSize > canvas.width) {
-        leftScore++;
-        resetBallPosition();
-      }
-
-      // Move right paddle AI
-      if (rightPaddleY + paddleHeight / 2 < ballY) {
-        rightPaddleY += paddleSpeed * 0.7;
-      } else {
-        rightPaddleY -= paddleSpeed * 0.7;
-      }
-
-      requestAnimationFrame(draw);
-    }
-
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "ArrowUp" && leftPaddleY > 0) {
-        leftPaddleY -= paddleSpeed;
-      }
-      if (e.key === "ArrowDown" && leftPaddleY + paddleHeight < canvas.height) {
-        leftPaddleY += paddleSpeed;
-      }
-    });
-
-    function startGame() {
-      document.getElementById("overlay").style.display = "none";
-      if (!gameRunning) {
-        gameRunning = true;
-        requestAnimationFrame(draw);
-      }
-    }
-  </script>
+<script src="game.js"></script>
 </body>
 </html>
