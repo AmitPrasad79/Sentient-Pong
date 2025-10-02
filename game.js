@@ -1,3 +1,12 @@
+// --- variables & setup here (canvas, ctx, paddles, ball, scores, etc.) ---
+
+function drawPaddle(x, y) { ... }
+
+function drawBall() { ... }
+
+function resetBallPosition() { ... }
+
+// ✅ ADD smoothMove + REPLACE draw()
 function smoothMove(current, target, speed) {
   const diff = target - current;
   return current + diff * speed;
@@ -18,23 +27,24 @@ function draw() {
   ctx.fillText(leftScore, canvas.width / 4, 20);
   ctx.fillText(rightScore, (3 * canvas.width) / 4, 20);
 
+  // Ball movement
   ballX += ballSpeedX;
   ballY += ballSpeedY;
 
   if (ballY <= 0 || ballY + ballSize >= canvas.height) ballSpeedY = -ballSpeedY;
 
-  if (
-    ballX <= paddleWidth &&
-    ballY + ballSize >= leftPaddleY &&
-    ballY <= leftPaddleY + paddleHeight
-  ) ballSpeedX = -ballSpeedX;
+  // Paddle collisions
+  if (ballX <= paddleWidth &&
+      ballY + ballSize >= leftPaddleY &&
+      ballY <= leftPaddleY + paddleHeight)
+    ballSpeedX = -ballSpeedX;
 
-  if (
-    ballX + ballSize >= canvas.width - paddleWidth &&
-    ballY + ballSize >= rightPaddleY &&
-    ballY <= rightPaddleY + paddleHeight
-  ) ballSpeedX = -ballSpeedX;
+  if (ballX + ballSize >= canvas.width - paddleWidth &&
+      ballY + ballSize >= rightPaddleY &&
+      ballY <= rightPaddleY + paddleHeight)
+    ballSpeedX = -ballSpeedX;
 
+  // Score update
   if (ballX < 0) {
     rightScore++;
     resetBallPosition();
@@ -44,11 +54,13 @@ function draw() {
     resetBallPosition();
   }
 
+  // AI smooth movement
   if (mode === "ai") {
     let targetY = ballY - paddleHeight / 2 + ballSize / 2;
-    rightPaddleY = smoothMove(rightPaddleY, targetY, 0.2); // Smooth slide with easing
+    rightPaddleY = smoothMove(rightPaddleY, targetY, 0.2);
   }
 
+  // Game over check
   if (leftScore >= 3 || rightScore >= 3) {
     gameRunning = false;
     document.getElementById("gameOver").style.display = "block";
