@@ -9,6 +9,8 @@ const winnerText = document.getElementById("winner");
 
 let difficulty = "normal";
 let gameRunning = false;
+let countdown = 0;
+let countdownActive = false;
 
 // Paddle settings
 const paddleWidth = 15, paddleHeight = 80;
@@ -17,7 +19,7 @@ let leftPaddleY, rightPaddleY;
 // Ball
 let ballSize = 40;
 const ballImage = new Image();
-ballImage.src = "./assets/senti.png";  // place your dog image inside assets folder
+ballImage.src = "./assets/senti.png";
 let ballX, ballY, ballSpeedX, ballSpeedY;
 
 // Score
@@ -56,6 +58,15 @@ function drawBall() {
   ctx.drawImage(ballImage, ballX, ballY, ballSize, ballSize);
 }
 
+// Draw countdown
+function drawCountdown() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.font = "60px Arial";
+  ctx.fillStyle = "white";
+  ctx.textAlign = "center";
+  ctx.fillText(countdown > 0 ? countdown : "Go!", canvas.width / 2, canvas.height / 2);
+}
+
 // Game loop
 function draw() {
   if (!gameRunning) return;
@@ -70,9 +81,12 @@ function draw() {
   // Scores
   ctx.font = "20px Arial";
   ctx.fillStyle = "white";
+  ctx.textAlign = "left";
   ctx.fillText(`Player: ${leftScore}`, 20, 30);
-  ctx.fillText(`AI: ${rightScore}`, canvas.width - 120, 30);
-  ctx.fillText(`High Score: ${highScore}`, canvas.width / 2 - 60, 30);
+  ctx.textAlign = "right";
+  ctx.fillText(`AI: ${rightScore}`, canvas.width - 20, 30);
+  ctx.textAlign = "center";
+  ctx.fillText(`High Score: ${highScore}`, canvas.width / 2, 30);
 
   // Move ball
   ballX += ballSpeedX;
@@ -118,10 +132,10 @@ function draw() {
     leftPaddleY += moveStep;
   }
 
-  // AI paddle movement with error margin
+  // AI paddle movement with randomness (so it can miss)
+  let aiSpeed = difficulty === "easy" ? 3 : difficulty === "normal" ? 5 : 7;
+  let errorMargin = difficulty === "easy" ? 120 : difficulty === "normal" ? 60 : 25;
   let targetY = ballY + ballSize / 2 - paddleHeight / 2;
-  let aiSpeed = difficulty === "easy" ? 3 : difficulty === "normal" ? 5 : 8;
-  let errorMargin = difficulty === "easy" ? 80 : difficulty === "normal" ? 40 : 10;
   targetY += (Math.random() * errorMargin - errorMargin / 2);
 
   if (rightPaddleY + paddleHeight / 2 < targetY) rightPaddleY += aiSpeed;
@@ -144,20 +158,36 @@ function draw() {
   }
 }
 
+// Countdown before starting game
+function startCountdown() {
+  countdown = 3;
+  countdownActive = true;
+  let interval = setInterval(() => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawCountdown();
+    countdown--;
+    if (countdown < 0) {
+      clearInterval(interval);
+      countdownActive = false;
+      gameRunning = true;
+      resetBall();
+      requestAnimationFrame(draw);
+    }
+  }, 1000);
+}
+
 // Start button
 startBtn.addEventListener("click", () => {
   difficulty = document.getElementById("difficulty").value;
   leftScore = rightScore = 0;
   resetPaddles();
-  resetBall();
-  gameRunning = true;
   menu.classList.add("hidden");
   gameOverScreen.classList.add("hidden");
   canvas.style.display = "block";
-  requestAnimationFrame(draw);
+  startCountdown();
 });
 
-// Restart button → go back to menu
+// Restart button → back to menu
 restartBtn.addEventListener("click", () => {
   gameOverScreen.classList.add("hidden");
   menu.classList.remove("hidden");
