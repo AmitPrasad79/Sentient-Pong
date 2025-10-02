@@ -19,18 +19,18 @@ let rightPaddleY = canvas.height / 2 - paddleHeight / 2;
 // Ball
 let ballSize = 25;
 const ballImage = new Image();
-ballImage.src = "./assets/dog.png";
+ballImage.src = "./assets/dog.png";  // put your PNG inside ./assets/
 let ballX, ballY, ballSpeedX, ballSpeedY;
 
 // Score
 let leftScore = 0, rightScore = 0;
 
-// Key states for smooth sliding
+// Key states
 let keys = {};
-document.addEventListener("keydown", (e) => keys[e.key] = true);
-document.addEventListener("keyup", (e) => keys[e.key] = false);
+document.addEventListener("keydown", (e) => keys[e.key.toLowerCase()] = true);
+document.addEventListener("keyup", (e) => keys[e.key.toLowerCase()] = false);
 
-// Reset ball
+// Reset ball position & speed
 function resetBall() {
   ballX = canvas.width / 2 - ballSize / 2;
   ballY = canvas.height / 2 - ballSize / 2;
@@ -59,10 +59,12 @@ function draw() {
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+  // Draw paddles & ball
   drawPaddle(0, leftPaddleY);
   drawPaddle(canvas.width - paddleWidth, rightPaddleY);
   drawBall();
 
+  // Draw score
   ctx.font = "20px Arial";
   ctx.fillText(leftScore, canvas.width / 4, 30);
   ctx.fillText(rightScore, (3 * canvas.width) / 4, 30);
@@ -90,24 +92,35 @@ function draw() {
   if (ballX < 0) { rightScore++; resetBall(); }
   if (ballX + ballSize > canvas.width) { leftScore++; resetBall(); }
 
-  // Player paddle controls (smooth movement)
+  // ==== Player paddle controls ====
   const moveStep = 6;
-  if (keys["w"] && leftPaddleY > 0) leftPaddleY -= moveStep;
-  if (keys["s"] && leftPaddleY + paddleHeight < canvas.height) leftPaddleY += moveStep;
 
-  if (mode === "multiplayer") {
-    if (keys["ArrowUp"] && rightPaddleY > 0) rightPaddleY -= moveStep;
-    if (keys["ArrowDown"] && rightPaddleY + paddleHeight < canvas.height) rightPaddleY += moveStep;
+  // Left paddle (Player 1) → W/S or ArrowUp/ArrowDown
+  if ((keys["w"] || keys["arrowup"]) && leftPaddleY > 0) {
+    leftPaddleY -= moveStep;
+  }
+  if ((keys["s"] || keys["arrowdown"]) && leftPaddleY + paddleHeight < canvas.height) {
+    leftPaddleY += moveStep;
   }
 
-  // AI movement
+  // Right paddle (Player 2) → only if multiplayer
+  if (mode === "multiplayer") {
+    if (keys["arrowup"] && rightPaddleY > 0) {
+      rightPaddleY -= moveStep;
+    }
+    if (keys["arrowdown"] && rightPaddleY + paddleHeight < canvas.height) {
+      rightPaddleY += moveStep;
+    }
+  }
+
+  // ==== AI movement ====
   if (mode === "ai") {
     let targetY = ballY - paddleHeight / 2 + ballSize / 2;
     let aiSpeed = difficulty === "easy" ? 0.05 : difficulty === "normal" ? 0.1 : 0.18;
     rightPaddleY = smoothMove(rightPaddleY, targetY, aiSpeed);
   }
 
-  // Win condition
+  // ==== Win condition ====
   if (leftScore >= 3 || rightScore >= 3) {
     gameRunning = false;
     gameOverScreen.classList.remove("hidden");
