@@ -1,168 +1,131 @@
-// Canvas setup
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
+canvas.width = 800;
+canvas.height = 500;
 
-// Game variables
-let paddleHeight = 100, paddleWidth = 10;
-let leftPaddleY = canvas.height / 2 - paddleHeight / 2;
-let rightPaddleY = canvas.height / 2 - paddleHeight / 2;
-
-let ballX = canvas.width / 2, ballY = canvas.height / 2;
-let ballSize = 25;
-let ballSpeedX = 3, ballSpeedY = 3;
-
-let leftScore = 0, rightScore = 0;
-let mode = "ai", difficulty = "normal";
 let gameRunning = false;
 
-// Load custom ball
-const ballImage = new Image();
-ballImage.src = "/assets/dog.png";
+// Loader simulation
+let loadProgress = 0;
+const loader = document.getElementById("loader");
+const menu = document.getElementById("menu");
+const startBtn = document.getElementById("startBtn");
+const loadingText = document.getElementById("loading-text");
 
-// Smooth paddle movement
-function smoothMove(current, target, speed) {
-  return current + (target - current) * speed;
+let loaderInterval = setInterval(() => {
+  loadProgress += 5;
+  loadingText.innerText = `Loading... ${loadProgress}%`;
+  if (loadProgress >= 100) {
+    clearInterval(loaderInterval);
+    loader.classList.add("hidden");
+    menu.classList.remove("hidden");
+  }
+}, 150);
+
+// Start button event
+startBtn.addEventListener("click", () => {
+  menu.classList.add("hidden");
+  canvas.classList.remove("hidden");
+  startGame();
+});
+
+// Game objects
+const paddleWidth = 10, paddleHeight = 80;
+let player = { x: 20, y: canvas.height / 2 - 40, score: 0 };
+let ai = { x: canvas.width - 30, y: canvas.height / 2 - 40, score: 0 };
+let ball = { x: canvas.width / 2, y: canvas.height / 2, size: 12, speedX: 3, speedY: 2 };
+
+function drawRect(x, y, w, h, color) {
+  ctx.fillStyle = color;
+  ctx.fillRect(x, y, w, h);
 }
 
-// Reset ball to center
-function resetBall() {
-  ballX = canvas.width / 2;
-  ballY = canvas.height / 2;
-  ballSpeedX = (Math.random() > 0.5 ? 1 : -1) * (difficulty === "easy" ? 2 : difficulty === "normal" ? 3 : 4);
-  ballSpeedY = (Math.random() > 0.5 ? 1 : -1) * (difficulty === "easy" ? 2 : difficulty === "normal" ? 3 : 4);
+function drawCircle(x, y, r, color) {
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.closePath();
+  ctx.fill();
 }
 
-// Draw functions
-function drawPaddle(x, y) {
+function drawText(text, x, y) {
   ctx.fillStyle = "white";
-  ctx.fillRect(x, y, paddleWidth, paddleHeight);
+  ctx.font = "24px Arial";
+  ctx.fillText(text, x, y);
 }
 
-function drawBall() {
-  ctx.drawImage(ballImage, ballX, ballY, ballSize, ballSize);
+function resetBall() {
+  ball.x = canvas.width / 2;
+  ball.y = canvas.height / 2;
+  ball.speedX = (Math.random() > 0.5 ? 1 : -1) * 3; // Slower ball
+  ball.speedY = (Math.random() > 0.5 ? 1 : -1) * 2;
 }
 
-// Main game loop
-function draw() {
-  if (!gameRunning) return;
+function update() {
+  // Ball movement
+  ball.x += ball.speedX;
+  ball.y += ball.speedY;
 
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  // Draw paddles
-  drawPaddle(0, leftPaddleY);
-  drawPaddle(canvas.width - paddleWidth, rightPaddleY);
-
-  // Draw ball
-  drawBall();
-
-  // Scores
-  ctx.font = "20px Arial";
-  ctx.fillText(leftScore, canvas.width / 4, 20);
-  ctx.fillText(rightScore, (3 * canvas.width) / 4, 20);
-
-  // Move ball
-  ballX += ballSpeedX;
-  ballY += ballSpeedY;
-
-  // Bounce
-  if (ballY <= 0 || ballY + ballSize >= canvas.height) ballSpeedY = -ballSpeedY;
-
-  // Paddle collisions
-  if (ballX <= paddleWidth &&
-      ballY + ballSize >= leftPaddleY &&
-      ballY <= leftPaddleY + paddleHeight) {
-    ballSpeedX = -ballSpeedX;
+  // Bounce top/bottom
+  if (ball.y - ball.size < 0 || ball.y + ball.size > canvas.height) {
+    ball.speedY *= -1;
   }
 
-  if (ballX + ballSize >= canvas.width - paddleWidth &&
-      ballY + ballSize >= rightPaddleY &&
-      ballY <= rightPaddleY + paddleHeight) {
-    ballSpeedX = -ballSpeedX;
+  // Paddle collisions
+  if (
+    ball.x - ball.size < player.x + paddleWidth &&
+    ball.y > player.y &&
+    ball.y < player.y + paddleHeight
+  ) {
+    ball.speedX *= -1;
+  }
+
+  if (
+    ball.x + ball.size > ai.x &&
+    ball.y > ai.y &&
+    ball.y < ai.y + paddleHeight
+  ) {
+    ball.speedX *= -1;
   }
 
   // Scoring
-  if (ballX < 0) { rightScore++; resetBall(); }
-  if (ballX + ballSize > canvas.width) { leftScore++; resetBall(); }
+  if (ball.x - ball.size < 0) {
+    ai.score++;
+    resetBall();
+  }
+  if (ball.x + ball.size > canvas.width) {
+    player.score++;
+    resetBall();
+  }
 
   // AI movement
-  if (mode === "ai") {
-    let targetY = ballY - paddleHeight / 2 + ballSize / 2;
-    let aiSpeed;
-
-    if (difficulty === "easy") {
-      aiSpeed = 0.08;
-      if (Math.random() < 0.002) targetY += 200;
-    } else if (difficulty === "normal") {
-      aiSpeed = 0.15;
-      if (Math.random() < 0.001) targetY += 50;
-    } else {
-      aiSpeed = 0.25;
-    }
-    rightPaddleY = smoothMove(rightPaddleY, targetY, aiSpeed);
-  }
-
-  // Game Over
-  if (leftScore >= 3 || rightScore >= 3) {
-    gameRunning = false;
-    document.getElementById("gameOver").style.display = "block";
-    document.getElementById("winner").innerText =
-      leftScore >= 3 ? "Player Wins!" : "AI Wins!";
-  } else {
-    requestAnimationFrame(draw);
-  }
+  ai.y += (ball.y - (ai.y + paddleHeight / 2)) * 0.08;
 }
 
-// Player controls
-document.addEventListener("keydown", (e) => {
-  if (mode === "multi") {
-    if (e.key === "w" && leftPaddleY > 0) leftPaddleY -= 20;
-    if (e.key === "s" && leftPaddleY + paddleHeight < canvas.height) leftPaddleY += 20;
-    if (e.key === "ArrowUp" && rightPaddleY > 0) rightPaddleY -= 20;
-    if (e.key === "ArrowDown" && rightPaddleY + paddleHeight < canvas.height) rightPaddleY += 20;
-  } else {
-    if (e.key === "w" && leftPaddleY > 0) leftPaddleY -= 20;
-    if (e.key === "s" && leftPaddleY + paddleHeight < canvas.height) leftPaddleY += 20;
-  }
-});
+function draw() {
+  drawRect(0, 0, canvas.width, canvas.height, "#222");
+  drawRect(player.x, player.y, paddleWidth, paddleHeight, "white");
+  drawRect(ai.x, ai.y, paddleWidth, paddleHeight, "white");
+  drawCircle(ball.x, ball.y, ball.size, "orange");
+  drawText(player.score, canvas.width / 4, 50);
+  drawText(ai.score, (canvas.width / 4) * 3, 50);
+}
 
-// Loading screen
-document.addEventListener("DOMContentLoaded", () => {
-  const loadingScreen = document.getElementById("loadingScreen");
-  const progressText = document.getElementById("progress");
-  let progress = 0;
+function gameLoop() {
+  if (!gameRunning) return;
+  update();
+  draw();
+  requestAnimationFrame(gameLoop);
+}
 
-  let loadingInterval = setInterval(() => {
-    progress += Math.floor(Math.random() * 10) + 1;
-    if (progress > 100) progress = 100;
-    progressText.textContent = progress + "%";
-
-    if (progress === 100) {
-      clearInterval(loadingInterval);
-      ballImage.onload = () => {
-        loadingScreen.style.display = "none";
-        document.getElementById("overlay").style.display = "block";
-      };
-    }
-  }, 200);
-});
-
-// Start button
-document.getElementById("startBtn").addEventListener("click", () => {
-  document.getElementById("overlay").style.display = "none";
-  canvas.style.display = "block";
-
-  mode = document.getElementById("mode").value;
-  difficulty = document.getElementById("difficulty").value;
-
-  leftScore = 0; rightScore = 0;
+function startGame() {
   resetBall();
   gameRunning = true;
-  requestAnimationFrame(draw);
-});
+  gameLoop();
 
-// Restart button
-document.getElementById("restartBtn").addEventListener("click", () => {
-  document.getElementById("gameOver").style.display = "none";
-  document.getElementById("overlay").style.display = "block";
-  canvas.style.display = "none";
-});
+  // Paddle movement (arrow keys)
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowUp" && player.y > 0) player.y -= 30;
+    if (e.key === "ArrowDown" && player.y < canvas.height - paddleHeight) player.y += 30;
+  });
+}
