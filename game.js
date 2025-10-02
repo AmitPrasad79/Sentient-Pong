@@ -12,15 +12,16 @@ const menu = document.getElementById("menu");
 const startBtn = document.getElementById("startBtn");
 const loadingText = document.getElementById("loading-text");
 
+let loadProgress = 0;
 let loaderInterval = setInterval(() => {
-  loadProgress += 5;
+  loadProgress += 20; // jumps faster
   loadingText.innerText = `Loading... ${loadProgress}%`;
   if (loadProgress >= 100) {
     clearInterval(loaderInterval);
     loader.classList.add("hidden");
     menu.classList.remove("hidden");
   }
-}, 150);
+}, 200); // total 1 second
 
 // Start button event
 startBtn.addEventListener("click", () => {
