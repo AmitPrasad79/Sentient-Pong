@@ -1,3 +1,5 @@
+console.log("Game script loaded ✅");
+
 const menu = document.getElementById("menu");
 const startBtn = document.getElementById("startBtn");
 const countdown = document.getElementById("countdown");
@@ -15,21 +17,19 @@ let playerScore = 0;
 let highScore = 0;
 let difficulty = "normal";
 
-// Reset ball position
 function resetBall() {
+  console.log("Resetting ball...");
   ballX = canvas.width / 2;
   ballY = canvas.height / 2;
   ballSpeedX = 3;
   ballSpeedY = 2;
 }
 
-// Draw paddle
 function drawPaddle(x, y) {
   ctx.fillStyle = "white";
   ctx.fillRect(x, y, 10, 80);
 }
 
-// Draw ball
 function drawBall() {
   ctx.fillStyle = "cyan";
   ctx.beginPath();
@@ -37,59 +37,41 @@ function drawBall() {
   ctx.fill();
 }
 
-// End game
 function endGame(msg) {
+  console.log("Game ended:", msg);
   gameRunning = false;
   canvas.style.display = "none";
   gameOver.classList.remove("hidden");
   winnerText.textContent = msg + ` | Score: ${playerScore} | High Score: ${highScore}`;
-  if (playerScore > highScore) {
-    highScore = playerScore;
-  }
+  if (playerScore > highScore) highScore = playerScore;
 }
 
-// Game loop
 function gameLoop() {
   if (!gameRunning) return;
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Draw paddles & ball
   drawPaddle(20, paddleY);
   drawPaddle(canvas.width - 30, aiY);
   drawBall();
 
-  // Ball movement
   ballX += ballSpeedX;
   ballY += ballSpeedY;
 
-  // Bounce top/bottom
   if (ballY <= 0 || ballY >= canvas.height) ballSpeedY *= -1;
 
-  // Left wall -> AI wins
-  if (ballX < 0) {
-    endGame("AI Wins!");
-    return;
-  }
+  if (ballX < 0) return endGame("AI Wins!");
+  if (ballX > canvas.width) return endGame("You Win!");
 
-  // Right wall -> You win
-  if (ballX > canvas.width) {
-    endGame("You Win!");
-    return;
-  }
-
-  // Collision with player paddle
   if (ballX - 10 <= 30 && ballY > paddleY && ballY < paddleY + 80) {
     ballSpeedX *= -1;
     playerScore++;
   }
 
-  // Collision with AI paddle
   if (ballX + 10 >= canvas.width - 30 && ballY > aiY && ballY < aiY + 80) {
     ballSpeedX *= -1;
   }
 
-  // AI follows ball (difficulty controlled)
   let aiSpeed = difficulty === "easy" ? 2 : difficulty === "hard" ? 5 : 3;
   if (ballY > aiY + 40) aiY += aiSpeed;
   else if (ballY < aiY + 40) aiY -= aiSpeed;
@@ -97,7 +79,6 @@ function gameLoop() {
   requestAnimationFrame(gameLoop);
 }
 
-// Countdown before game starts
 function runCountdown(cb) {
   let c = 3;
   countdown.classList.remove("hidden");
@@ -114,8 +95,8 @@ function runCountdown(cb) {
   }, 700);
 }
 
-// Start button
 startBtn.onclick = () => {
+  console.log("Start clicked");
   menu.classList.add("hidden");
   difficulty = document.getElementById("difficulty").value;
   resetBall();
@@ -123,23 +104,22 @@ startBtn.onclick = () => {
   aiY = canvas.height / 2 - 40;
   playerScore = 0;
   runCountdown(() => {
+    console.log("Countdown done, starting game...");
     gameRunning = true;
     canvas.style.display = "block";
     gameLoop();
   });
 };
 
-// Move player paddle
 document.addEventListener("keydown", (e) => {
   if (e.key === "ArrowUp" || e.key === "w") paddleY -= 20;
   if (e.key === "ArrowDown" || e.key === "s") paddleY += 20;
-  // Keep paddle in bounds
   if (paddleY < 0) paddleY = 0;
   if (paddleY > canvas.height - 80) paddleY = canvas.height - 80;
 });
 
-// Restart button
 restartBtn.onclick = () => {
+  console.log("Restart clicked");
   gameOver.classList.add("hidden");
   menu.classList.remove("hidden");
 };
