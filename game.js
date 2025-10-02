@@ -1,135 +1,164 @@
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
-canvas.width = 800;
-canvas.height = 600;
+const menu = document.getElementById("menu");
+const startBtn = document.getElementById("startBtn");
+const restartBtn = document.getElementById("restartBtn");
+const gameOverScreen = document.getElementById("gameOver");
+const winnerText = document.getElementById("winner");
 
+let difficulty = "normal";
 let gameRunning = false;
-let countdownActive = false;
-let countdown = 3;
 
-let playerScore = 0;
-let aiScore = 0;
+// Paddle settings
+const paddleWidth = 15, paddleHeight = 80;
+let leftPaddleY, rightPaddleY;
+
+// Ball
+let ballSize = 40;
+const ballImage = new Image();
+ballImage.src = "./assets/dog.png";  // place your dog image inside assets folder
+let ballX, ballY, ballSpeedX, ballSpeedY;
+
+// Score
+let leftScore, rightScore;
 let highScore = 0;
 
-const paddleWidth = 100, paddleHeight = 20;
-const ballSize = 15;
+// Key controls
+let keys = {};
+document.addEventListener("keydown", (e) => keys[e.key.toLowerCase()] = true);
+document.addEventListener("keyup", (e) => keys[e.key.toLowerCase()] = false);
 
-let player = { x: canvas.width / 2 - paddleWidth / 2, y: canvas.height - 30, width: paddleWidth, height: paddleHeight, dy: 0 };
-let ai = { x: canvas.width / 2 - paddleWidth / 2, y: 10, width: paddleWidth, height: paddleHeight };
-let ball = { x: canvas.width / 2, y: canvas.height / 2, dx: 4, dy: 4, size: ballSize };
+// Reset ball
+function resetBall() {
+  ballX = canvas.width / 2 - ballSize / 2;
+  ballY = canvas.height / 2 - ballSize / 2;
 
-document.getElementById("startBtn").addEventListener("click", startCountdown);
+  let baseSpeed = difficulty === "easy" ? 2 : difficulty === "normal" ? 3 : 4;
+  ballSpeedX = Math.random() > 0.5 ? baseSpeed : -baseSpeed;
+  ballSpeedY = Math.random() > 0.5 ? baseSpeed : -baseSpeed;
+}
 
-document.addEventListener("keydown", (e) => {
-    if (e.key === "ArrowLeft" || e.key === "a") player.dy = -6;
-    if (e.key === "ArrowRight" || e.key === "d") player.dy = 6;
+// Reset paddles
+function resetPaddles() {
+  leftPaddleY = canvas.height / 2 - paddleHeight / 2;
+  rightPaddleY = canvas.height / 2 - paddleHeight / 2;
+}
+
+// Draw paddle
+function drawPaddle(x, y) {
+  ctx.fillStyle = "white";
+  ctx.fillRect(x, y, paddleWidth, paddleHeight);
+}
+
+// Draw ball
+function drawBall() {
+  ctx.drawImage(ballImage, ballX, ballY, ballSize, ballSize);
+}
+
+// Game loop
+function draw() {
+  if (!gameRunning) return;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Paddles + ball
+  drawPaddle(0, leftPaddleY);
+  drawPaddle(canvas.width - paddleWidth, rightPaddleY);
+  drawBall();
+
+  // Scores
+  ctx.font = "20px Arial";
+  ctx.fillStyle = "white";
+  ctx.fillText(`Player: ${leftScore}`, 20, 30);
+  ctx.fillText(`AI: ${rightScore}`, canvas.width - 120, 30);
+  ctx.fillText(`High Score: ${highScore}`, canvas.width / 2 - 60, 30);
+
+  // Move ball
+  ballX += ballSpeedX;
+  ballY += ballSpeedY;
+
+  // Bounce top/bottom
+  if (ballY <= 0 || ballY + ballSize >= canvas.height) ballSpeedY = -ballSpeedY;
+
+  // Paddle collisions
+  if (
+    ballX <= paddleWidth &&
+    ballY + ballSize >= leftPaddleY &&
+    ballY <= leftPaddleY + paddleHeight
+  ) {
+    ballSpeedX = -ballSpeedX;
+  }
+
+  if (
+    ballX + ballSize >= canvas.width - paddleWidth &&
+    ballY + ballSize >= rightPaddleY &&
+    ballY <= rightPaddleY + paddleHeight
+  ) {
+    ballSpeedX = -ballSpeedX;
+  }
+
+  // Scoring
+  if (ballX < 0) {
+    rightScore++;
+    resetBall();
+  }
+  if (ballX + ballSize > canvas.width) {
+    leftScore++;
+    if (leftScore > highScore) highScore = leftScore;
+    resetBall();
+  }
+
+  // Player paddle movement (W/S or Arrows)
+  const moveStep = 6;
+  if ((keys["w"] || keys["arrowup"]) && leftPaddleY > 0) {
+    leftPaddleY -= moveStep;
+  }
+  if ((keys["s"] || keys["arrowdown"]) && leftPaddleY + paddleHeight < canvas.height) {
+    leftPaddleY += moveStep;
+  }
+
+  // AI paddle movement with error margin
+  let targetY = ballY + ballSize / 2 - paddleHeight / 2;
+  let aiSpeed = difficulty === "easy" ? 3 : difficulty === "normal" ? 5 : 8;
+  let errorMargin = difficulty === "easy" ? 80 : difficulty === "normal" ? 40 : 10;
+  targetY += (Math.random() * errorMargin - errorMargin / 2);
+
+  if (rightPaddleY + paddleHeight / 2 < targetY) rightPaddleY += aiSpeed;
+  else if (rightPaddleY + paddleHeight / 2 > targetY) rightPaddleY -= aiSpeed;
+
+  // Clamp AI paddle
+  if (rightPaddleY < 0) rightPaddleY = 0;
+  if (rightPaddleY + paddleHeight > canvas.height) {
+    rightPaddleY = canvas.height - paddleHeight;
+  }
+
+  // Win condition
+  if (leftScore >= 3 || rightScore >= 3) {
+    gameRunning = false;
+    canvas.style.display = "none";
+    gameOverScreen.classList.remove("hidden");
+    winnerText.innerText = leftScore >= 3 ? "🎉 You Win!" : "🤖 AI Wins!";
+  } else {
+    requestAnimationFrame(draw);
+  }
+}
+
+// Start button
+startBtn.addEventListener("click", () => {
+  difficulty = document.getElementById("difficulty").value;
+  leftScore = rightScore = 0;
+  resetPaddles();
+  resetBall();
+  gameRunning = true;
+  menu.classList.add("hidden");
+  gameOverScreen.classList.add("hidden");
+  canvas.style.display = "block";
+  requestAnimationFrame(draw);
 });
 
-document.addEventListener("keyup", () => { player.dy = 0; });
-
-function startCountdown() {
-    if (gameRunning || countdownActive) return;
-    countdown = 3;
-    countdownActive = true;
-    let interval = setInterval(() => {
-        drawCountdown();
-        countdown--;
-        if (countdown < 0) {
-            clearInterval(interval);
-            countdownActive = false;
-            startGame();
-        }
-    }, 1000);
-}
-
-function drawCountdown() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = "white";
-    ctx.font = "60px Arial";
-    ctx.textAlign = "center";
-    ctx.fillText(countdown > 0 ? countdown : "GO!", canvas.width / 2, canvas.height / 2);
-}
-
-function startGame() {
-    resetBall();
-    gameRunning = true;
-    requestAnimationFrame(update);
-}
-
-function resetBall() {
-    ball.x = canvas.width / 2;
-    ball.y = canvas.height / 2;
-    ball.dx = Math.random() > 0.5 ? 4 : -4;
-    ball.dy = 4;
-}
-
-function update() {
-    if (!gameRunning) return;
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Move player
-    player.x += player.dy;
-    if (player.x < 0) player.x = 0;
-    if (player.x + player.width > canvas.width) player.x = canvas.width - player.width;
-
-    // Move AI (simple tracking)
-    ai.x += (ball.x - (ai.x + ai.width / 2)) * 0.07;
-
-    // Ball movement
-    ball.x += ball.dx;
-    ball.y += ball.dy;
-
-    // Wall bounce
-    if (ball.x < 0 || ball.x + ball.size > canvas.width) ball.dx *= -1;
-
-    // Paddle collisions
-    if (
-        ball.y + ball.size > player.y &&
-        ball.x > player.x &&
-        ball.x < player.x + player.width
-    ) {
-        ball.dy *= -1;
-        playerScore++;
-        if (playerScore > highScore) highScore = playerScore;
-    }
-
-    if (
-        ball.y < ai.y + ai.height &&
-        ball.x > ai.x &&
-        ball.x < ai.x + ai.width
-    ) {
-        ball.dy *= -1;
-        aiScore++;
-    }
-
-    // Scoring
-    if (ball.y + ball.size > canvas.height) {
-        aiScore++;
-        resetBall();
-    }
-    if (ball.y < 0) {
-        playerScore++;
-        if (playerScore > highScore) highScore = playerScore;
-        resetBall();
-    }
-
-    // Draw paddles
-    ctx.fillStyle = "white";
-    ctx.fillRect(player.x, player.y, player.width, player.height);
-    ctx.fillRect(ai.x, ai.y, ai.width, ai.height);
-
-    // Draw ball
-    ctx.beginPath();
-    ctx.arc(ball.x, ball.y, ball.size / 2, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Draw scores
-    ctx.font = "20px Arial";
-    ctx.fillText("Player: " + playerScore, 100, canvas.height - 20);
-    ctx.fillText("AI: " + aiScore, 100, 40);
-    ctx.fillText("High Score: " + highScore, canvas.width - 200, 40);
-
-    requestAnimationFrame(update);
-}
+// Restart button → go back to menu
+restartBtn.addEventListener("click", () => {
+  gameOverScreen.classList.add("hidden");
+  menu.classList.remove("hidden");
+});
