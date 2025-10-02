@@ -24,7 +24,7 @@ let mode = "ai";
 let difficulty = "normal";
 
 const ballImage = new Image();
-ballImage.src = "assets/ball.png";
+ballImage.src = "assets/dog.png";
 
 // 🟢 Smooth movement helper
 function smoothMove(current, target, speed) {
