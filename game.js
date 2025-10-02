@@ -91,4 +91,78 @@ function draw() {
 
     if (difficulty === "easy") {
       aiSpeed = 0.08;
-v
+      if (Math.random() < 0.002) targetY += 200;
+    } else if (difficulty === "normal") {
+      aiSpeed = 0.15;
+      if (Math.random() < 0.001) targetY += 50;
+    } else {
+      aiSpeed = 0.25;
+    }
+    rightPaddleY = smoothMove(rightPaddleY, targetY, aiSpeed);
+  }
+
+  // Game Over
+  if (leftScore >= 3 || rightScore >= 3) {
+    gameRunning = false;
+    document.getElementById("gameOver").style.display = "block";
+    document.getElementById("winner").innerText =
+      leftScore >= 3 ? "Player Wins!" : "AI Wins!";
+  } else {
+    requestAnimationFrame(draw);
+  }
+}
+
+// Player controls
+document.addEventListener("keydown", (e) => {
+  if (mode === "multi") {
+    if (e.key === "w" && leftPaddleY > 0) leftPaddleY -= 20;
+    if (e.key === "s" && leftPaddleY + paddleHeight < canvas.height) leftPaddleY += 20;
+    if (e.key === "ArrowUp" && rightPaddleY > 0) rightPaddleY -= 20;
+    if (e.key === "ArrowDown" && rightPaddleY + paddleHeight < canvas.height) rightPaddleY += 20;
+  } else {
+    if (e.key === "w" && leftPaddleY > 0) leftPaddleY -= 20;
+    if (e.key === "s" && leftPaddleY + paddleHeight < canvas.height) leftPaddleY += 20;
+  }
+});
+
+// Loading screen
+document.addEventListener("DOMContentLoaded", () => {
+  const loadingScreen = document.getElementById("loadingScreen");
+  const progressText = document.getElementById("progress");
+  let progress = 0;
+
+  let loadingInterval = setInterval(() => {
+    progress += Math.floor(Math.random() * 10) + 1;
+    if (progress > 100) progress = 100;
+    progressText.textContent = progress + "%";
+
+    if (progress === 100) {
+      clearInterval(loadingInterval);
+      ballImage.onload = () => {
+        loadingScreen.style.display = "none";
+        document.getElementById("overlay").style.display = "block";
+      };
+    }
+  }, 200);
+});
+
+// Start button
+document.getElementById("startBtn").addEventListener("click", () => {
+  document.getElementById("overlay").style.display = "none";
+  canvas.style.display = "block";
+
+  mode = document.getElementById("mode").value;
+  difficulty = document.getElementById("difficulty").value;
+
+  leftScore = 0; rightScore = 0;
+  resetBall();
+  gameRunning = true;
+  requestAnimationFrame(draw);
+});
+
+// Restart button
+document.getElementById("restartBtn").addEventListener("click", () => {
+  document.getElementById("gameOver").style.display = "none";
+  document.getElementById("overlay").style.display = "block";
+  canvas.style.display = "none";
+});
