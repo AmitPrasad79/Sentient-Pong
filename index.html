@@ -1,45 +1,34 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
   <title>Sentient Pong</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Loading screen -->
-  <div id="loadingScreen">
-    <h1>Loading... <span id="progress">0%</span></h1>
-  </div>
-
-  <!-- Main menu -->
-  <div id="overlay">
-    <h1>Sentient Pong</h1>
-    <label>Mode:
-      <select id="mode">
-        <option value="ai">Play vs AI</option>
-        <option value="multi">2 Player</option>
-      </select>
-    </label>
-    <br><br>
-    <label>Difficulty:
-      <select id="difficulty">
-        <option value="easy">Easy</option>
-        <option value="normal" selected>Normal</option>
-        <option value="hard">Hard</option>
-      </select>
-    </label>
-    <br><br>
+  <div id="menu">
+    <h1>🐶 Sentient Pong</h1>
     <button id="startBtn">Start Game</button>
+    <br><br>
+    <label for="mode">Mode:</label>
+    <select id="mode">
+      <option value="ai">Play vs AI</option>
+      <option value="multiplayer">Multiplayer</option>
+    </select>
+    <br><br>
+    <label for="difficulty">Difficulty:</label>
+    <select id="difficulty">
+      <option value="easy">Easy</option>
+      <option value="normal" selected>Normal</option>
+      <option value="hard">Hard</option>
+    </select>
   </div>
 
-  <!-- Game canvas -->
   <canvas id="gameCanvas" width="800" height="500"></canvas>
 
-  <!-- Game over -->
-  <div id="gameOver">
+  <div id="gameOver" class="hidden">
     <h2 id="winner"></h2>
-    <button id="restartBtn">Play Again</button>
+    <button id="restartBtn">Restart</button>
   </div>
 
   <script src="game.js"></script>
