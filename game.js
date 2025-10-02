@@ -17,7 +17,7 @@ let gameRunning = false;
 
 // Load custom ball
 const ballImage = new Image();
-ballImage.src = "./assets/dog.png";
+ballImage.src = "/assets/dog.png";
 
 // Smooth paddle movement
 function smoothMove(current, target, speed) {
