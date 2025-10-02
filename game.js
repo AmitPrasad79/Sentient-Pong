@@ -17,7 +17,7 @@ let leftPaddleY, rightPaddleY;
 // Ball
 let ballSize = 40;
 const ballImage = new Image();
-ballImage.src = "./assets/dog.png";  // place your dog image inside assets folder
+ballImage.src = "./assets/senti.png";  // place your dog image inside assets folder
 let ballX, ballY, ballSpeedX, ballSpeedY;
 
 // Score
