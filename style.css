@@ -1,13 +1,18 @@
 body {
-  background: black;
-  color: white;
-  font-family: Arial, sans-serif;
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100vh;
+  background: black;
   margin: 0;
-  flex-direction: column;
+}
+
+#gameCanvas {
+  background: #111;
+  border: 2px solid white;
+  display: none;
+  width: 600px;   /* ✅ smaller fixed width */
+  height: 400px;  /* ✅ smaller fixed height */
 }
 
 #menu, #gameOver {
