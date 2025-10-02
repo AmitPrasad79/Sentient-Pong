@@ -6,19 +6,29 @@ const startBtn = document.getElementById("startBtn");
 const restartBtn = document.getElementById("restartBtn");
 const gameOverScreen = document.getElementById("gameOver");
 const winnerText = document.getElementById("winner");
-const scoreBoard = document.getElementById("scoreBoard");
-const highScoreBoard = document.getElementById("highScore");
 
 let difficulty = "normal";
 let gameRunning = false;
 
-const ballSize = 60;
-const ballImage = new Image();
-ballImage.src = "./assets/dog.png"; // your PNG
+// Paddle settings
+const paddleWidth = 15, paddleHeight = 80;
+let leftPaddleY = canvas.height / 2 - paddleHeight / 2;
+let rightPaddleY = canvas.height / 2 - paddleHeight / 2;
 
+// Ball
+let ballSize = 40;
+const ballImage = new Image();
+ballImage.src = "./assets/dog.png";  // place your PNG here
 let ballX, ballY, ballSpeedX, ballSpeedY;
-let playerScore = 0, botScore = 0;
+
+// Score
+let leftScore = 0, rightScore = 0;
 let highScore = 0;
+
+// Keys
+let keys = {};
+document.addEventListener("keydown", (e) => keys[e.key.toLowerCase()] = true);
+document.addEventListener("keyup", (e) => keys[e.key.toLowerCase()] = false);
 
 // Reset ball
 function resetBall() {
@@ -30,44 +40,37 @@ function resetBall() {
   ballSpeedY = Math.random() > 0.5 ? baseSpeed : -baseSpeed;
 }
 
+// Draw paddle
+function drawPaddle(x, y) {
+  ctx.fillStyle = "white";
+  ctx.fillRect(x, y, paddleWidth, paddleHeight);
+}
+
 // Draw ball
 function drawBall() {
   ctx.drawImage(ballImage, ballX, ballY, ballSize, ballSize);
 }
 
-// Handle click on ball
-canvas.addEventListener("click", (e) => {
-  if (!gameRunning) return;
-
-  const rect = canvas.getBoundingClientRect();
-  const mouseX = e.clientX - rect.left;
-  const mouseY = e.clientY - rect.top;
-
-  if (
-    mouseX >= ballX &&
-    mouseX <= ballX + ballSize &&
-    mouseY >= ballY &&
-    mouseY <= ballY + ballSize
-  ) {
-    playerScore++;
-    if (playerScore > highScore) highScore = playerScore;
-    resetBall();
-  }
-});
+// Smooth AI paddle
+function smoothMove(current, target, speed) {
+  return current + (target - current) * speed;
+}
 
 function draw() {
   if (!gameRunning) return;
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Draw ball
+  // Paddles + ball
+  drawPaddle(0, leftPaddleY);
+  drawPaddle(canvas.width - paddleWidth, rightPaddleY);
   drawBall();
 
-  // Draw scores
-  ctx.fillStyle = "white";
+  // Scores
   ctx.font = "20px Arial";
-  ctx.fillText(`Your Score: ${playerScore}`, 20, 30);
-  ctx.fillText(`Bot Score: ${botScore}`, canvas.width - 150, 30);
+  ctx.fillStyle = "white";
+  ctx.fillText(`Player: ${leftScore}`, 20, 30);
+  ctx.fillText(`AI: ${rightScore}`, canvas.width - 120, 30);
   ctx.fillText(`High Score: ${highScore}`, canvas.width / 2 - 60, 30);
 
   // Move ball
@@ -77,17 +80,53 @@ function draw() {
   // Bounce top/bottom
   if (ballY <= 0 || ballY + ballSize >= canvas.height) ballSpeedY = -ballSpeedY;
 
-  // Missed ball → bot scores
-  if (ballX < 0 || ballX + ballSize > canvas.width) {
-    botScore++;
+  // Paddle collisions
+  if (
+    ballX <= paddleWidth &&
+    ballY + ballSize >= leftPaddleY &&
+    ballY <= leftPaddleY + paddleHeight
+  ) {
+    ballSpeedX = -ballSpeedX;
+  }
+
+  if (
+    ballX + ballSize >= canvas.width - paddleWidth &&
+    ballY + ballSize >= rightPaddleY &&
+    ballY <= rightPaddleY + paddleHeight
+  ) {
+    ballSpeedX = -ballSpeedX;
+  }
+
+  // Score system
+  if (ballX < 0) {
+    rightScore++;
+    resetBall();
+  }
+  if (ballX + ballSize > canvas.width) {
+    leftScore++;
+    if (leftScore > highScore) highScore = leftScore;
     resetBall();
   }
 
+  // Player paddle movement (W/S or Arrows)
+  const moveStep = 6;
+  if ((keys["w"] || keys["arrowup"]) && leftPaddleY > 0) {
+    leftPaddleY -= moveStep;
+  }
+  if ((keys["s"] || keys["arrowdown"]) && leftPaddleY + paddleHeight < canvas.height) {
+    leftPaddleY += moveStep;
+  }
+
+  // AI paddle movement
+  let targetY = ballY - paddleHeight / 2 + ballSize / 2;
+  let aiSpeed = difficulty === "easy" ? 0.05 : difficulty === "normal" ? 0.1 : 0.18;
+  rightPaddleY = smoothMove(rightPaddleY, targetY, aiSpeed);
+
   // Win condition
-  if (playerScore >= 3 || botScore >= 3) {
+  if (leftScore >= 3 || rightScore >= 3) {
     gameRunning = false;
     gameOverScreen.classList.remove("hidden");
-    winnerText.innerText = playerScore >= 3 ? "🎉 You Win!" : "🤖 Bot Wins!";
+    winnerText.innerText = leftScore >= 3 ? "🎉 You Win!" : "🤖 AI Wins!";
   } else {
     requestAnimationFrame(draw);
   }
@@ -96,7 +135,7 @@ function draw() {
 // Start button
 startBtn.addEventListener("click", () => {
   difficulty = document.getElementById("difficulty").value;
-  playerScore = botScore = 0;
+  leftScore = rightScore = 0;
   resetBall();
   gameRunning = true;
   menu.classList.add("hidden");
@@ -106,7 +145,7 @@ startBtn.addEventListener("click", () => {
 
 // Restart button
 restartBtn.addEventListener("click", () => {
-  playerScore = botScore = 0;
+  leftScore = rightScore = 0;
   resetBall();
   gameRunning = true;
   gameOverScreen.classList.add("hidden");
