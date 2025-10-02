@@ -24,7 +24,8 @@ let mode = "ai";
 let difficulty = "normal";
 
 const ballImage = new Image();
-ballImage.src = "assets/dog.png";
+ballImage.src = "./assets/dog.png";
+let ballSize = 25; // bigger and easier to see
 
 // 🟢 Smooth movement helper
 function smoothMove(current, target, speed) {
