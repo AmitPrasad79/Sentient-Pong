@@ -1,34 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Sentient Pong</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div id="menu">
     <h1>🐶 Sentient Pong</h1>
-    <button id="startBtn">Start Game</button>
-    <br><br>
-    <label for="mode">Mode:</label>
-    <select id="mode">
-      <option value="ai">Play vs AI</option>
-      <option value="multiplayer">Multiplayer</option>
-    </select>
-    <br><br>
-    <label for="difficulty">Difficulty:</label>
+    <label for="difficulty">Choose Difficulty:</label>
     <select id="difficulty">
       <option value="easy">Easy</option>
       <option value="normal" selected>Normal</option>
       <option value="hard">Hard</option>
     </select>
+    <br/><br/>
+    <button id="startBtn">Start Game</button>
   </div>
 
   <canvas id="gameCanvas" width="800" height="500"></canvas>
 
   <div id="gameOver" class="hidden">
     <h2 id="winner"></h2>
-    <button id="restartBtn">Restart</button>
+    <button id="restartBtn">Play Again</button>
   </div>
 
   <script src="game.js"></script>
