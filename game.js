@@ -23,9 +23,9 @@ let gameRunning = false;
 let mode = "ai";
 let difficulty = "normal";
 
+let ballSize = 25;
 const ballImage = new Image();
-ballImage.src = "./assets/dog.png";
-let ballSize = 25; // bigger and easier to see
+ballImage.src = "./assets/dog.png"; // your custom PNG
 
 // 🟢 Smooth movement helper
 function smoothMove(current, target, speed) {
@@ -95,10 +95,27 @@ function draw() {
   }
 
   // AI Control
-  if (mode === "ai") {
-    let targetY = ballY - paddleHeight / 2 + ballSize / 2;
-    rightPaddleY = smoothMove(rightPaddleY, targetY, 0.3); // smoother and faster
+if (mode === "ai") {
+  let targetY = ballY - paddleHeight / 2 + ballSize / 2;
+
+  let aiSpeed;
+  if (difficulty === "easy") {
+    aiSpeed = 0.08;
+    // 20% chance to "forget" to move (miss the ball)
+    if (Math.random() < 0.002) targetY += 200; 
+  } 
+  else if (difficulty === "normal") {
+    aiSpeed = 0.15;
+    // 5% chance to mess up slightly
+    if (Math.random() < 0.001) targetY += 50;
+  } 
+  else {
+    aiSpeed = 0.25; // hard mode → almost perfect
   }
+
+  rightPaddleY = smoothMove(rightPaddleY, targetY, aiSpeed);
+}
+
 
   // Win condition
   if (leftScore >= 3 || rightScore >= 3) {
@@ -128,9 +145,15 @@ startBtn.addEventListener("click", () => {
   mode = document.getElementById("mode").value;
   difficulty = document.getElementById("speed").value;
 
-  if (difficulty === "easy") ballSpeedX = 3;
-  if (difficulty === "normal") ballSpeedX = 5;
-  if (difficulty === "hard") ballSpeedX = 8;
+if (difficulty === "easy") { 
+  ballSpeedX = 2; ballSpeedY = 2; 
+}
+if (difficulty === "normal") { 
+  ballSpeedX = 3; ballSpeedY = 3; 
+}
+if (difficulty === "hard") { 
+  ballSpeedX = 4; ballSpeedY = 4; 
+}
 
   leftScore = 0;
   rightScore = 0;
