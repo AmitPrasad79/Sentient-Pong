@@ -13,7 +13,8 @@ let countdown = 0;
 let countdownActive = false;
 
 // Paddle settings
-const paddleWidth = 15, paddleHeight = 80;
+const paddleWidth = 15, playerPaddleHeight = 80;
+let aiPaddleHeight = 60; // shorter AI paddle
 let leftPaddleY, rightPaddleY;
 
 // Ball
@@ -43,14 +44,14 @@ function resetBall() {
 
 // Reset paddles
 function resetPaddles() {
-  leftPaddleY = canvas.height / 2 - paddleHeight / 2;
-  rightPaddleY = canvas.height / 2 - paddleHeight / 2;
+  leftPaddleY = canvas.height / 2 - playerPaddleHeight / 2;
+  rightPaddleY = canvas.height / 2 - aiPaddleHeight / 2;
 }
 
 // Draw paddle
-function drawPaddle(x, y) {
+function drawPaddle(x, y, height) {
   ctx.fillStyle = "white";
-  ctx.fillRect(x, y, paddleWidth, paddleHeight);
+  ctx.fillRect(x, y, paddleWidth, height);
 }
 
 // Draw ball
@@ -74,8 +75,8 @@ function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   // Paddles + ball
-  drawPaddle(0, leftPaddleY);
-  drawPaddle(canvas.width - paddleWidth, rightPaddleY);
+  drawPaddle(0, leftPaddleY, playerPaddleHeight);
+  drawPaddle(canvas.width - paddleWidth, rightPaddleY, aiPaddleHeight);
   drawBall();
 
   // Scores
@@ -99,7 +100,7 @@ function draw() {
   if (
     ballX <= paddleWidth &&
     ballY + ballSize >= leftPaddleY &&
-    ballY <= leftPaddleY + paddleHeight
+    ballY <= leftPaddleY + playerPaddleHeight
   ) {
     ballSpeedX = -ballSpeedX;
   }
@@ -107,7 +108,7 @@ function draw() {
   if (
     ballX + ballSize >= canvas.width - paddleWidth &&
     ballY + ballSize >= rightPaddleY &&
-    ballY <= rightPaddleY + paddleHeight
+    ballY <= rightPaddleY + aiPaddleHeight
   ) {
     ballSpeedX = -ballSpeedX;
   }
@@ -128,31 +129,31 @@ function draw() {
   if ((keys["w"] || keys["arrowup"]) && leftPaddleY > 0) {
     leftPaddleY -= moveStep;
   }
-  if ((keys["s"] || keys["arrowdown"]) && leftPaddleY + paddleHeight < canvas.height) {
+  if ((keys["s"] || keys["arrowdown"]) && leftPaddleY + playerPaddleHeight < canvas.height) {
     leftPaddleY += moveStep;
   }
 
-  // AI paddle movement with randomness (so it can miss)
-  let aiSpeed = difficulty === "easy" ? 3 : difficulty === "normal" ? 5 : 7;
-  let errorMargin = difficulty === "easy" ? 120 : difficulty === "normal" ? 60 : 25;
-  let targetY = ballY + ballSize / 2 - paddleHeight / 2;
+  // AI paddle movement (smoother but can miss)
+  let aiSpeed = difficulty === "easy" ? 5 : difficulty === "normal" ? 7 : 10;
+  let errorMargin = difficulty === "easy" ? 50 : difficulty === "normal" ? 25 : 5;
+  let targetY = ballY + ballSize / 2 - aiPaddleHeight / 2;
   targetY += (Math.random() * errorMargin - errorMargin / 2);
 
-  if (rightPaddleY + paddleHeight / 2 < targetY) rightPaddleY += aiSpeed;
-  else if (rightPaddleY + paddleHeight / 2 > targetY) rightPaddleY -= aiSpeed;
+  if (rightPaddleY + aiPaddleHeight / 2 < targetY) rightPaddleY += aiSpeed;
+  else if (rightPaddleY + aiPaddleHeight / 2 > targetY) rightPaddleY -= aiSpeed;
 
   // Clamp AI paddle
   if (rightPaddleY < 0) rightPaddleY = 0;
-  if (rightPaddleY + paddleHeight > canvas.height) {
-    rightPaddleY = canvas.height - paddleHeight;
+  if (rightPaddleY + aiPaddleHeight > canvas.height) {
+    rightPaddleY = canvas.height - aiPaddleHeight;
   }
 
-  // Win condition
-  if (leftScore >= 3 || rightScore >= 3) {
+  // Win condition (sudden death - first to 1)
+  if (leftScore >= 1 || rightScore >= 1) {
     gameRunning = false;
     canvas.style.display = "none";
     gameOverScreen.classList.remove("hidden");
-    winnerText.innerText = leftScore >= 3 ? "🎉 You Win!" : "🤖 AI Wins!";
+    winnerText.innerText = leftScore >= 1 ? "🎉 You Win!" : "🤖 AI Wins!";
   } else {
     requestAnimationFrame(draw);
   }
@@ -180,6 +181,10 @@ function startCountdown() {
 startBtn.addEventListener("click", () => {
   difficulty = document.getElementById("difficulty").value;
   leftScore = rightScore = 0;
+
+  // adjust AI paddle size by difficulty
+  aiPaddleHeight = difficulty === "easy" ? 50 : difficulty === "normal" ? 60 : 70;
+
   resetPaddles();
   menu.classList.add("hidden");
   gameOverScreen.classList.add("hidden");
