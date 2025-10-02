@@ -40,7 +40,7 @@ function drawBall() {
 // End game
 function endGame(msg) {
   gameRunning = false;
-  canvas.classList.add("hidden");
+  canvas.style.display = "none";
   gameOver.classList.remove("hidden");
   winnerText.textContent = msg + ` | Score: ${playerScore} | High Score: ${highScore}`;
   if (playerScore > highScore) {
@@ -79,21 +79,13 @@ function gameLoop() {
   }
 
   // Collision with player paddle
-  if (
-    ballX - 10 <= 30 &&
-    ballY > paddleY &&
-    ballY < paddleY + 80
-  ) {
+  if (ballX - 10 <= 30 && ballY > paddleY && ballY < paddleY + 80) {
     ballSpeedX *= -1;
     playerScore++;
   }
 
   // Collision with AI paddle
-  if (
-    ballX + 10 >= canvas.width - 30 &&
-    ballY > aiY &&
-    ballY < aiY + 80
-  ) {
+  if (ballX + 10 >= canvas.width - 30 && ballY > aiY && ballY < aiY + 80) {
     ballSpeedX *= -1;
   }
 
@@ -132,7 +124,7 @@ startBtn.onclick = () => {
   playerScore = 0;
   runCountdown(() => {
     gameRunning = true;
-    canvas.classList.remove("hidden");
+    canvas.style.display = "block";
     gameLoop();
   });
 };
