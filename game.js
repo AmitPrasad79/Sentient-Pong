@@ -25,7 +25,7 @@ let difficulty = "normal";
 
 let ballSize = 25;
 const ballImage = new Image();
-ballImage.src = "./assets/dog.png"; // your custom PNG
+ballImage.src = "/assets/dog.png"; // your custom PNG
 
 // 🟢 Smooth movement helper
 function smoothMove(current, target, speed) {
