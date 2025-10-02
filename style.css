@@ -14,8 +14,12 @@ body {
   background: #111;
   border: 2px solid white;
   display: none;
-  width: 600px;   /* ✅ smaller fixed width */
-  height: 400px;  /* ✅ smaller fixed height */
+
+  /* Make responsive */
+  width: 90vw;       /* take 90% of screen width */
+  height: auto;      /* keep aspect ratio */
+  max-width: 800px;  /* don’t get too big */
+  max-height: 600px;
 }
 
 #menu, #gameOver {
