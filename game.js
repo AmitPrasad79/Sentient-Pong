@@ -25,6 +25,11 @@ let ballX, ballY, ballSpeedX, ballSpeedY;
 // Score
 let leftScore = 0, rightScore = 0;
 
+// Key states for smooth sliding
+let keys = {};
+document.addEventListener("keydown", (e) => keys[e.key] = true);
+document.addEventListener("keyup", (e) => keys[e.key] = false);
+
 // Reset ball
 function resetBall() {
   ballX = canvas.width / 2 - ballSize / 2;
@@ -44,10 +49,9 @@ function drawBall() {
   ctx.drawImage(ballImage, ballX, ballY, ballSize, ballSize);
 }
 
-// Smooth paddle AI move
+// Smooth AI paddle movement
 function smoothMove(current, target, speed) {
-  const diff = target - current;
-  return current + diff * speed;
+  return current + (target - current) * speed;
 }
 
 function draw() {
@@ -86,10 +90,20 @@ function draw() {
   if (ballX < 0) { rightScore++; resetBall(); }
   if (ballX + ballSize > canvas.width) { leftScore++; resetBall(); }
 
+  // Player paddle controls (smooth movement)
+  const moveStep = 6;
+  if (keys["w"] && leftPaddleY > 0) leftPaddleY -= moveStep;
+  if (keys["s"] && leftPaddleY + paddleHeight < canvas.height) leftPaddleY += moveStep;
+
+  if (mode === "multiplayer") {
+    if (keys["ArrowUp"] && rightPaddleY > 0) rightPaddleY -= moveStep;
+    if (keys["ArrowDown"] && rightPaddleY + paddleHeight < canvas.height) rightPaddleY += moveStep;
+  }
+
   // AI movement
   if (mode === "ai") {
     let targetY = ballY - paddleHeight / 2 + ballSize / 2;
-    let aiSpeed = difficulty === "easy" ? 0.08 : difficulty === "normal" ? 0.15 : 0.25;
+    let aiSpeed = difficulty === "easy" ? 0.05 : difficulty === "normal" ? 0.1 : 0.18;
     rightPaddleY = smoothMove(rightPaddleY, targetY, aiSpeed);
   }
 
@@ -102,17 +116,6 @@ function draw() {
     requestAnimationFrame(draw);
   }
 }
-
-// Player controls
-document.addEventListener("keydown", e => {
-  const step = 30;
-  if (e.key === "w") leftPaddleY -= step;
-  if (e.key === "s") leftPaddleY += step;
-  if (mode === "multiplayer") {
-    if (e.key === "ArrowUp") rightPaddleY -= step;
-    if (e.key === "ArrowDown") rightPaddleY += step;
-  }
-});
 
 // Start button
 startBtn.addEventListener("click", () => {
