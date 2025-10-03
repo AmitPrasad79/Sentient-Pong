@@ -249,57 +249,69 @@ resetPaddles();
 resetBall();
 applyCanvasScale();
 
-// ======================================================
-// 🌟 Background Falling Balls
-// ======================================================
-const bgCanvas = document.createElement("canvas");
+// ... your existing Pong code ...
+
+// Initialize: hide canvas & ensure paddles/ball positioned
+canvas.style.display = "none";
+resetPaddles();
+resetBall();
+applyCanvasScale();
+
+
+// --------------------------------------
+// 🎨 Falling Ball Background Animation
+// --------------------------------------
+
+const bgCanvas = document.getElementById("bgCanvas");
 const bgCtx = bgCanvas.getContext("2d");
-document.body.insertBefore(bgCanvas, document.body.firstChild);
 
-bgCanvas.style.position = "fixed";
-bgCanvas.style.top = "0";
-bgCanvas.style.left = "0";
-bgCanvas.style.zIndex = "-1"; // behind game canvas
-bgCanvas.width = window.innerWidth;
-bgCanvas.height = window.innerHeight;
-
-const bgBallImage = new Image();
-bgBallImage.src = "./assets/senti.png"; // same PNG you use for ball
-
-let fallingBalls = [];
-
-function initBackground() {
-  fallingBalls = [];
-  for (let i = 0; i < 25; i++) {
-    fallingBalls.push({
-      x: Math.random() * bgCanvas.width,
-      y: Math.random() * bgCanvas.height,
-      speed: 1 + Math.random() * 2,
-      size: 20 + Math.random() * 35
-    });
-  }
-}
-
-function drawBackground() {
-  bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
-  for (let b of fallingBalls) {
-    bgCtx.drawImage(bgBallImage, b.x, b.y, b.size, b.size);
-    b.y += b.speed;
-    if (b.y > bgCanvas.height) {
-      b.y = -b.size;
-      b.x = Math.random() * bgCanvas.width;
-    }
-  }
-  requestAnimationFrame(drawBackground);
-}
-
-window.addEventListener("resize", () => {
+function resizeBg() {
   bgCanvas.width = window.innerWidth;
   bgCanvas.height = window.innerHeight;
-  initBackground();
-});
+}
+window.addEventListener("resize", resizeBg);
+resizeBg();
 
-bgBallImage.onload = () => {
-  initBackground();
-  drawBackground();
-};
+const balls = [];
+const gravity = 0.2;
+
+function spawnBall() {
+  const x = Math.random() * bgCanvas.width;
+  const size = 20 + Math.random() * 25;
+  balls.push({
+    x, y: -size, size,
+    speedY: 1 + Math.random() * 2,
+    alpha: 1
+  });
+}
+
+function animateBg() {
+  bgCtx.clearRect(0,0,bgCanvas.width,bgCanvas.height);
+
+  balls.forEach((b, i) => {
+    b.speedY += gravity * 0.1;
+    b.y += b.speedY;
+
+    if (ballImage && ballImage.complete) {
+      bgCtx.globalAlpha = b.alpha;
+      bgCtx.drawImage(ballImage, b.x, b.y, b.size, b.size);
+      bgCtx.globalAlpha = 1;
+    } else {
+      bgCtx.fillStyle = "rgba(255,100,200,"+b.alpha+")";
+      bgCtx.beginPath();
+      bgCtx.arc(b.x, b.y, b.size/2, 0, Math.PI*2);
+      bgCtx.fill();
+    }
+
+    if (b.y > bgCanvas.height + b.size) {
+      b.alpha -= 0.02;
+      if (b.alpha <= 0) balls.splice(i,1);
+    }
+  });
+
+  requestAnimationFrame(animateBg);
+}
+
+setInterval(spawnBall, 800);
+animateBg();
+
