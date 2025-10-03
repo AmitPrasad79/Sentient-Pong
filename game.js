@@ -101,10 +101,6 @@ function drawBall() {
 function drawScoreboard() {
   ctx.font = "20px Arial";
   ctx.fillStyle = "#fff";
-  ctx.textAlign = "left";
-  ctx.fillText(`Player: ${leftScore}`, 20, 30);
-  ctx.textAlign = "right";
-  ctx.fillText(`AI: ${rightScore}`, canvas.width - 20, 30);
   ctx.textAlign = "center";
   ctx.fillText(`Games: ${totalGames}  |  Wins: ${playerWins}  |  AI: ${aiWins}`, canvas.width/2, 30);
 }
