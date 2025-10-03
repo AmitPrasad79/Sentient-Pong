@@ -6,7 +6,7 @@ bgCanvas.width = window.innerWidth;
 bgCanvas.height = window.innerHeight;
 
 const sentiImg = new Image();
-sentiImg.src = "./assets/senti1.png"; // path to your ball png
+sentiImg.src = "./assets/senti1.jpg"; // path to your ball png
 
 let flakes = [];
 const MAX_FLAKES = 15; // keep it low for "snow-like" effect
