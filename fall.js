@@ -16,7 +16,7 @@ resizeCanvas();
 
 // load image
 const ballImg = new Image();
-ballImg.src = "./assets/20251003_152047.png"; // make sure this path is correct
+ballImg.src = "./assets/sentient.png"; // make sure this path is correct
 
 // store falling objects
 let balls = [];
