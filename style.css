@@ -27,13 +27,6 @@ body {
   margin-bottom: 20px;
 }
 
-canvas {
-  display: none; /* hidden until game starts */
-  background: #111;
-  border: 2px solid white;
-  margin: auto;
-}
-
 button {
   background: #444;
   border: none;
