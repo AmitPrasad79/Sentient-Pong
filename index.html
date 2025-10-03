@@ -7,10 +7,7 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <!-- Background falling senti.png -->
   <canvas id="bgCanvas"></canvas>
-
-  <!-- Menu -->
   <div id="menu">
     <h1>🏓 Sentient Pong</h1>
     <p><strong>How to Play:</strong><br>
@@ -28,22 +25,14 @@
     <br/><br/>
     <button id="startBtn">Start Game</button>
   </div>
-
-  <!-- Game Canvas -->
   <canvas id="gameCanvas" width="800" height="500"></canvas>
-
-  <!-- Game Over -->
   <div id="gameOver" class="hidden">
     <h2 id="winner"></h2>
     <button id="restartBtn">Play Again</button>
   </div>
-
-  <!-- Footer -->
   <div id="footer">
     Made with ❤️ by <a href="https://twitter.com/0xBalls" target="_blank">@0xBalls</a>
   </div>
-
-  <!-- Scripts -->
   <script src="fall.js"></script>
   <script src="game.js"></script>
 </body>
