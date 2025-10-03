@@ -1,4 +1,4 @@
-/* game.js - Sentient Pong (updated)
+/* game.js - Sentient Pong (smooth AI update)
    - Default: Easy
    - Sudden-death (first to 1)
    - Stats: totalGames, playerWins, aiWins (persist until refresh)
@@ -46,7 +46,7 @@ window.addEventListener("keyup", (e) => keys[e.key.toLowerCase()] = false);
 if (!canvas.width || canvas.width < 400) canvas.width = 800;
 if (!canvas.height || canvas.height < 300) canvas.height = 450;
 
-// Responsive draw-scaling: render at canvas.width/height internally, scale visually
+// Responsive draw-scaling
 function applyCanvasScale() {
   const maxW = window.innerWidth * 0.94;
   const maxH = window.innerHeight * 0.84;
@@ -57,7 +57,7 @@ function applyCanvasScale() {
 window.addEventListener("resize", applyCanvasScale);
 applyCanvasScale();
 
-// Touch / mouse controls: move left paddle
+// Touch / mouse controls
 function handlePointerMove(clientY) {
   const rect = canvas.getBoundingClientRect();
   const y = clientY - rect.top;
@@ -75,7 +75,6 @@ canvas.addEventListener("touchmove", (e) => {
 function resetBall() {
   ballX = canvas.width / 2 - ballSize / 2;
   ballY = canvas.height / 2 - ballSize / 2;
-  // easy speed is slow
   const baseSpeed = difficulty === "easy" ? 2 : difficulty === "normal" ? 3 : 4;
   ballSpeedX = (Math.random() > 0.5 ? 1 : -1) * baseSpeed;
   ballSpeedY = (Math.random() * 2 - 1) * baseSpeed;
@@ -105,52 +104,47 @@ function drawScoreboard() {
   ctx.fillText(`Games: ${totalGames}  |  Wins: ${playerWins}  |  AI: ${aiWins}`, canvas.width/2, 30);
 }
 
-// End round (sudden death)
+// End round
 function endRound(playerWon) {
   gameRunning = false;
   totalGames++;
   if (playerWon) playerWins++;
   else aiWins++;
 
-  // update winner text and show gameOver panel
   winnerText.innerText = playerWon ? "🎉 You Win!" : "🤖 AI Wins!";
   canvas.style.display = "none";
   gameOverScreen.classList.remove("hidden");
 }
 
 // Main draw loop
+let frameCount = 0;
+let aiTargetY = 0;
+
 function draw() {
   if (!gameRunning) return;
+  frameCount++;
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  // draw field
   ctx.fillStyle = "#111";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // draw paddles & ball
   drawPaddle(0, leftPaddleY, playerPaddleHeight);
   drawPaddle(canvas.width - paddleWidth, rightPaddleY, aiPaddleHeight);
   drawBall();
   drawScoreboard();
 
-  // move ball
   ballX += ballSpeedX;
   ballY += ballSpeedY;
 
-  // bounce top/bottom
   if (ballY <= 0) { ballY = 0; ballSpeedY = -ballSpeedY; }
   if (ballY + ballSize >= canvas.height) { ballY = canvas.height - ballSize; ballSpeedY = -ballSpeedY; }
 
-  // player paddle collision
   if (ballX <= paddleWidth && ballY + ballSize >= leftPaddleY && ballY <= leftPaddleY + playerPaddleHeight) {
-    ballX = paddleWidth; // nudge out
-    ballSpeedX = Math.abs(ballSpeedX) * 1.02; // reflect and slightly speed up horizontally
-    // add a little random vertical kick
+    ballX = paddleWidth;
+    ballSpeedX = Math.abs(ballSpeedX) * 1.02;
     ballSpeedY += (Math.random() - 0.5) * 1.2;
   }
 
-  // AI paddle collision
   if (ballX + ballSize >= canvas.width - paddleWidth &&
       ballY + ballSize >= rightPaddleY && ballY <= rightPaddleY + aiPaddleHeight) {
     ballX = canvas.width - paddleWidth - ballSize;
@@ -158,49 +152,37 @@ function draw() {
     ballSpeedY += (Math.random() - 0.5) * 1.0;
   }
 
-  // OUT OF BOUNDS -> sudden death immediate round end
-  if (ballX + ballSize < 0) {
-    // AI scored
-    rightScore++;
-    endRound(false);
-    return;
-  }
-  if (ballX > canvas.width) {
-    // Player scored
-    leftScore++;
-    endRound(true);
-    return;
-  }
+  if (ballX + ballSize < 0) { rightScore++; endRound(false); return; }
+  if (ballX > canvas.width) { leftScore++; endRound(true); return; }
 
-  // Player keyboard fallback (W/S and ArrowUp/ArrowDown)
+  // Player keyboard controls
   const step = 6;
   if ((keys["w"] || keys["arrowup"]) && leftPaddleY > 0) leftPaddleY -= step;
   if ((keys["s"] || keys["arrowdown"]) && leftPaddleY + playerPaddleHeight < canvas.height) leftPaddleY += step;
-  leftPaddleY = Math.max(0, Math.min(leftPaddleY, canvas.height - playerPaddleHeight));
 
-  // AI movement: dumber on easy (big error + slow), better on others
-  let aiSpeed = difficulty === "easy" ? 3 : difficulty === "normal" ? 5 : 7;
-  let errorMargin = difficulty === "easy" ? 100 : difficulty === "normal" ? 40 : 12;
-  // target center offset by random error so AI can miss sometimes
-  let target = ballY + ballSize/2 - aiPaddleHeight/2 + (Math.random() * errorMargin - errorMargin/2);
+  // --- Smooth AI movement ---
+  let aiSpeed = difficulty === "easy" ? 2.2 : difficulty === "normal" ? 3.5 : 5;
+  let errorMargin = difficulty === "easy" ? 140 : difficulty === "normal" ? 60 : 20;
 
-  // move AI toward target (step-based)
-  const aiCenter = rightPaddleY + aiPaddleHeight/2;
-  if (aiCenter < target) rightPaddleY += aiSpeed;
-  else if (aiCenter > target) rightPaddleY -= aiSpeed;
+  // Update target only every few frames for delay
+  if (frameCount % (difficulty === "easy" ? 10 : difficulty === "normal" ? 6 : 3) === 0) {
+    aiTargetY = ballY + ballSize/2 - aiPaddleHeight/2 +
+               (Math.random()*errorMargin - errorMargin/2);
+  }
 
-  // clamp AI paddle
+  // Smooth interpolation
+  rightPaddleY += (aiTargetY - rightPaddleY) * 0.08 * aiSpeed;
+
+  // Clamp AI paddle
   rightPaddleY = Math.max(0, Math.min(rightPaddleY, canvas.height - aiPaddleHeight));
 
-  // next frame
   if (gameRunning) requestAnimationFrame(draw);
 }
 
-// Countdown animation (3,2,1,Go)
+// Countdown
 function startCountdownAndRun() {
   countdown = 3;
   canvas.style.display = "block";
-  // visually reset canvas for the countdown
   function step() {
     ctx.clearRect(0,0,canvas.width,canvas.height);
     ctx.fillStyle = "#111";
@@ -213,7 +195,6 @@ function startCountdownAndRun() {
     if (countdown >= -1) {
       setTimeout(step, 700);
     } else {
-      // start game
       resetBall();
       gameRunning = true;
       requestAnimationFrame(draw);
@@ -222,11 +203,10 @@ function startCountdownAndRun() {
   step();
 }
 
-// Start button handler
+// Start button
 startBtn.addEventListener("click", () => {
-  // force easy default
-  difficulty = "easy";
-  aiPaddleHeight = 40; // short AI paddle on easy
+  difficulty = "easy"; // force easy
+  aiPaddleHeight = 40;
   leftScore = 0;
   rightScore = 0;
   resetPaddles();
@@ -236,14 +216,14 @@ startBtn.addEventListener("click", () => {
   startCountdownAndRun();
 });
 
-// Restart button returns to menu (keeps stats)
+// Restart button
 restartBtn.addEventListener("click", () => {
   gameOverScreen.classList.add("hidden");
   menu.classList.remove("hidden");
   canvas.style.display = "none";
 });
 
-// Initialize: hide canvas & ensure paddles/ball positioned
+// Init
 canvas.style.display = "none";
 resetPaddles();
 resetBall();
