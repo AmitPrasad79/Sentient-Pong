@@ -249,19 +249,9 @@ resetPaddles();
 resetBall();
 applyCanvasScale();
 
-// ... your existing Pong code ...
-
-// Initialize: hide canvas & ensure paddles/ball positioned
-canvas.style.display = "none";
-resetPaddles();
-resetBall();
-applyCanvasScale();
-
-
-// --------------------------------------
-// 🎨 Falling Ball Background Animation
-// --------------------------------------
-
+// -------------------------
+// 🎨 Falling Ball Background
+// -------------------------
 const bgCanvas = document.getElementById("bgCanvas");
 const bgCtx = bgCanvas.getContext("2d");
 
@@ -289,7 +279,7 @@ function animateBg() {
   bgCtx.clearRect(0,0,bgCanvas.width,bgCanvas.height);
 
   balls.forEach((b, i) => {
-    b.speedY += gravity * 0.1;
+    b.speedY += gravity * 0.05;
     b.y += b.speedY;
 
     if (ballImage && ballImage.complete) {
@@ -312,6 +302,7 @@ function animateBg() {
   requestAnimationFrame(animateBg);
 }
 
-setInterval(spawnBall, 800);
+setInterval(spawnBall, 1000);
 animateBg();
+
 
