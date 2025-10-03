@@ -16,7 +16,7 @@ resizeCanvas();
 
 // load image
 const ballImg = new Image();
-ballImg.src = "./assets/senti.png"; // make sure this path is correct
+ballImg.src = "./assets/senti1.jpg"; // make sure this path is correct
 
 // store falling objects
 let balls = [];
