@@ -27,7 +27,7 @@ let rightPaddleY = 0;
 
 const ballSize = 40;
 const ballImage = new Image();
-ballImage.src = "./assets/senti.png"; // your PNG path
+ballImage.src = "./assets/sentient.png"; // your PNG path
 let ballX = 0, ballY = 0, ballSpeedX = 0, ballSpeedY = 0;
 
 let leftScore = 0, rightScore = 0;
