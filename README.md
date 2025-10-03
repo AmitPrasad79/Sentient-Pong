@@ -31,7 +31,7 @@ This keeps each round short, exciting, and competitive.
   - Mouse movement  
   - Touch input (mobile-friendly)  
 - ⚡ **Countdown Start** – 3...2...1...Go! for each round.  
-- 🌌 **Sentient Ball** – Custom sprite support (default: `senti.png`).
+- 🌌 **Sentient Ball** – Custom sprite support.
 
 ---
 
