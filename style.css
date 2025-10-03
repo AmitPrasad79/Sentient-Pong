@@ -18,7 +18,7 @@ body {
   /* Make responsive */
   width: 90vw;       /* take 90% of screen width */
   height: auto;      /* keep aspect ratio */
-  max-width: 700px;  /* don’t get too big */
+  max-width: 800px;  /* don’t get too big */
   max-height: 500px;
 }
 
