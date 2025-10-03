@@ -9,7 +9,7 @@ window.addEventListener("resize", resizeBG);
 resizeBG();
 
 const sentiImg = new Image();
-sentiImg.src = "senti.png"; // path to your image
+sentiImg.src = "/assets/senti.png"; // path to your image
 
 const snowParticles = [];
 
