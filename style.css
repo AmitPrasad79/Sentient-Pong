@@ -15,10 +15,9 @@ body {
   border: 2px solid white;
   display: none;
 
-  /* Make responsive */
-  width: 90vw;       /* take 90% of screen width */
-  height: auto;      /* keep aspect ratio */
-  max-width: 800px;  /* don’t get too big */
+  width: 90vw;       
+  height: auto;      
+  max-width: 800px;  
   max-height: 500px;
 }
 
@@ -50,6 +49,6 @@ button:hover {
   top: 0; left: 0;
   width: 100%;
   height: 100%;
-  z-index: -1; /* stays behind menus */
-  background: #111; /* dark backdrop */
+  z-index: -1; 
+  background: #111; 
 }
