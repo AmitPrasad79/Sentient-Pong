@@ -1,57 +1,63 @@
-// fall.js - Sentient snowfall background
+// fall.js - smooth snowfall style background using senti.png
+
 const bgCanvas = document.getElementById("bgCanvas");
 const bgCtx = bgCanvas.getContext("2d");
 
-bgCanvas.width = window.innerWidth;
-bgCanvas.height = window.innerHeight;
+// make sure transparency is respected
+bgCtx.imageSmoothingEnabled = true;
 
-const sentiImg = new Image();
-sentiImg.src = "./assets/senti1.jpg"; // path to your ball png
+// resize canvas to full screen
+function resizeCanvas() {
+  bgCanvas.width = window.innerWidth;
+  bgCanvas.height = window.innerHeight;
+}
+window.addEventListener("resize", resizeCanvas);
+resizeCanvas();
 
-let flakes = [];
-const MAX_FLAKES = 15; // keep it low for "snow-like" effect
+// load image
+const ballImg = new Image();
+ballImg.src = "./assets/senti.png"; // make sure this path is correct
 
-class Flake {
-  constructor() {
-    this.reset();
-  }
-  reset() {
-    this.x = Math.random() * bgCanvas.width;
-    this.y = -50;
-    this.size = 24 + Math.random() * 20; // varied sizes
-    this.speedY = 0.5 + Math.random() * 1.2; // smooth fall
-    this.speedX = (Math.random() - 0.5) * 0.3; // gentle drift
-  }
-  update() {
-    this.y += this.speedY;
-    this.x += this.speedX;
-    if (this.y > bgCanvas.height + 40) this.reset();
-  }
-  draw() {
-    if (sentiImg.complete) {
-      bgCtx.drawImage(sentiImg, this.x, this.y, this.size, this.size);
-    }
-  }
+// store falling objects
+let balls = [];
+const MAX_BALLS = 6; // keep it low for gentle effect
+
+function createBall() {
+  const size = 25 + Math.random() * 20; // random size
+  return {
+    x: Math.random() * bgCanvas.width,
+    y: -size,
+    size: size,
+    speed: 0.7 + Math.random() * 1.2,
+    drift: (Math.random() - 0.5) * 0.5 // little side movement
+  };
 }
 
-// initialize
-for (let i = 0; i < MAX_FLAKES; i++) {
-  flakes.push(new Flake());
-}
-
+// main loop
 function animate() {
-  bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
-  flakes.forEach(flake => {
-    flake.update();
-    flake.draw();
+  bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height); // keep background transparent
+
+  // add new balls until max
+  if (balls.length < MAX_BALLS) {
+    balls.push(createBall());
+  }
+
+  // update and draw
+  balls.forEach((ball, i) => {
+    ball.y += ball.speed;
+    ball.x += ball.drift;
+
+    if (ballImg.complete) {
+      bgCtx.drawImage(ballImg, ball.x, ball.y, ball.size, ball.size);
+    }
+
+    // remove if out of screen
+    if (ball.y > bgCanvas.height + ball.size) {
+      balls.splice(i, 1);
+    }
   });
+
   requestAnimationFrame(animate);
 }
 
-animate();
-
-// resize handling
-window.addEventListener("resize", () => {
-  bgCanvas.width = window.innerWidth;
-  bgCanvas.height = window.innerHeight;
-});
+ballImg.onload = animate;
