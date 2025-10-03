@@ -1,10 +1,3 @@
-/* game.js - Sentient Pong (updated)
-   - Difficulty: Easy / Normal / Hard (from dropdown)
-   - Sudden-death (first to 1)
-   - Stats: totalGames, playerWins, aiWins (persist until refresh)
-   - Responsive scaling, touch/mouse/keyboard controls
-*/
-
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
@@ -69,7 +62,6 @@ function resetBall() {
   ballX = canvas.width / 2 - ballSize / 2;
   ballY = canvas.height / 2 - ballSize / 2;
 
-  // base speed depends on difficulty
   const baseSpeed = difficulty === "easy" ? 2 : difficulty === "normal" ? 3.5 : 5;
   ballSpeedX = (Math.random() > 0.5 ? 1 : -1) * baseSpeed;
   ballSpeedY = (Math.random() * 2 - 1) * baseSpeed;
@@ -129,7 +121,7 @@ function draw() {
 
   if (ballX <= paddleWidth && ballY + ballSize >= leftPaddleY && ballY <= leftPaddleY + playerPaddleHeight) {
     ballX = paddleWidth;
-    ballSpeedX = Math.abs(ballSpeedX) * 1.05; // slight acceleration
+    ballSpeedX = Math.abs(ballSpeedX) * 1.05; 
     ballSpeedY += (Math.random() - 0.5) * 1.2;
   }
 
@@ -181,13 +173,10 @@ function startCountdownAndRun() {
   step();
 }
 
-// Start button
 startBtn.addEventListener("click", () => {
-  // get difficulty from dropdown
   const select = document.getElementById("difficulty");
   difficulty = select.value;
 
-  // AI paddle height by difficulty
   if (difficulty === "easy") aiPaddleHeight = 60;
   else if (difficulty === "normal") aiPaddleHeight = 80;
   else if (difficulty === "hard") aiPaddleHeight = 100;
@@ -201,7 +190,6 @@ startBtn.addEventListener("click", () => {
   startCountdownAndRun();
 });
 
-// Restart button
 restartBtn.addEventListener("click", () => {
   gameOverScreen.classList.add("hidden");
   menu.classList.remove("hidden");
