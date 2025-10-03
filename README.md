@@ -1,6 +1,6 @@
 # 🏓 Sentient Pong
 
-A modern, playful spin on the classic Pong — featuring a sentient ball, sudden-death rounds, and a persistent scoreboard.  
+A modern, playful spin on the classic Pong featuring a sentient ball, sudden-death rounds, and a persistent scoreboard.  
 This game is lightweight, browser-based, and responsive across devices (desktop, tablet, and mobile).
 
 ---
@@ -9,7 +9,7 @@ This game is lightweight, browser-based, and responsive across devices (desktop,
 
 **Sentient Pong** reimagines Pong with a twist:
 - You control the **sentient ball** instead of a paddle.  
-- No more left-vs-right paddles — just you versus the AI in a sudden-death arena.  
+- No more left-vs-right paddles, just you versus the AI in a sudden-death arena.  
 - The AI guards one side while you guard the other by controlling the ball’s path.
 - First score **wins instantly** (sudden death).  
 
