@@ -19,7 +19,7 @@ body {
   width: 90vw;       /* take 90% of screen width */
   height: auto;      /* keep aspect ratio */
   max-width: 800px;  /* don’t get too big */
-  max-height: 550px;
+  max-height: 350px;
 }
 
 #menu, #gameOver {
