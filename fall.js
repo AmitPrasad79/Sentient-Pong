@@ -1,12 +1,8 @@
-// fall.js - smooth snowfall style background using senti.png
-
 const bgCanvas = document.getElementById("bgCanvas");
 const bgCtx = bgCanvas.getContext("2d");
 
-// make sure transparency is respected
 bgCtx.imageSmoothingEnabled = true;
 
-// resize canvas to full screen
 function resizeCanvas() {
   bgCanvas.width = window.innerWidth;
   bgCanvas.height = window.innerHeight;
@@ -14,35 +10,30 @@ function resizeCanvas() {
 window.addEventListener("resize", resizeCanvas);
 resizeCanvas();
 
-// load image
 const ballImg = new Image();
-ballImg.src = "./assets/sentient.png"; // make sure this path is correct
+ballImg.src = "./assets/sentient.png"; 
 
-// store falling objects
 let balls = [];
-const MAX_BALLS = 6; // keep it low for gentle effect
+const MAX_BALLS = 6; 
 
 function createBall() {
-  const size = 25 + Math.random() * 20; // random size
+  const size = 25 + Math.random() * 20; 
   return {
     x: Math.random() * bgCanvas.width,
     y: -size,
     size: size,
     speed: 0.7 + Math.random() * 1.2,
-    drift: (Math.random() - 0.5) * 0.5 // little side movement
+    drift: (Math.random() - 0.5) * 0.5 
   };
 }
 
-// main loop
 function animate() {
-  bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height); // keep background transparent
+  bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height); 
 
-  // add new balls until max
   if (balls.length < MAX_BALLS) {
     balls.push(createBall());
   }
 
-  // update and draw
   balls.forEach((ball, i) => {
     ball.y += ball.speed;
     ball.x += ball.drift;
@@ -51,7 +42,6 @@ function animate() {
       bgCtx.drawImage(ballImg, ball.x, ball.y, ball.size, ball.size);
     }
 
-    // remove if out of screen
     if (ball.y > bgCanvas.height + ball.size) {
       balls.splice(i, 1);
     }
