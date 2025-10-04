@@ -14,8 +14,8 @@ document.addEventListener("DOMContentLoaded", () => {
   let countdown = 0;
 
   const paddleWidth = 15;
-  const playerPaddleHeight = 80;
-  let aiPaddleHeight = 60;
+  let playerPaddleHeight = 80; // must be let (so we can change it)
+  let aiPaddleHeight = 80;
   let leftPaddleY = 0;
   let rightPaddleY = 0;
 
@@ -23,15 +23,20 @@ document.addEventListener("DOMContentLoaded", () => {
   const ballImage = new Image();
   ballImage.src = "./assets/sentient.png";
 
-  let ballX = 0, ballY = 0, ballSpeedX = 0, ballSpeedY = 0;
+  let ballX = 0,
+    ballY = 0,
+    ballSpeedX = 0,
+    ballSpeedY = 0;
   let totalGames = 0;
   let playerWins = 0;
   let aiWins = 0;
   let keys = {};
 
-  window.addEventListener("keydown", (e) => keys[e.key.toLowerCase()] = true);
-  window.addEventListener("keyup", (e) => keys[e.key.toLowerCase()] = false);
+  // Player movement keys
+  window.addEventListener("keydown", (e) => (keys[e.key.toLowerCase()] = true));
+  window.addEventListener("keyup", (e) => (keys[e.key.toLowerCase()] = false));
 
+  // Ensure proper canvas size
   if (!canvas.width || canvas.width < 400) canvas.width = 800;
   if (!canvas.height || canvas.height < 300) canvas.height = 450;
 
@@ -45,18 +50,25 @@ document.addEventListener("DOMContentLoaded", () => {
   window.addEventListener("resize", applyCanvasScale);
   applyCanvasScale();
 
+  // Player paddle follows mouse/touch
   function handlePointerMove(clientY) {
     const rect = canvas.getBoundingClientRect();
     const y = clientY - rect.top;
     leftPaddleY = y - playerPaddleHeight / 2;
     leftPaddleY = Math.max(0, Math.min(leftPaddleY, canvas.height - playerPaddleHeight));
   }
-  canvas.addEventListener("mousemove", (e) => { if (gameRunning) handlePointerMove(e.clientY); });
-  canvas.addEventListener("touchmove", (e) => {
-    if (!gameRunning) return;
-    e.preventDefault();
-    handlePointerMove(e.touches[0].clientY);
-  }, { passive: false });
+  canvas.addEventListener("mousemove", (e) => {
+    if (gameRunning) handlePointerMove(e.clientY);
+  });
+  canvas.addEventListener(
+    "touchmove",
+    (e) => {
+      if (!gameRunning) return;
+      e.preventDefault();
+      handlePointerMove(e.touches[0].clientY);
+    },
+    { passive: false }
+  );
 
   function resetBall() {
     ballX = canvas.width / 2 - ballSize / 2;
@@ -119,29 +131,48 @@ document.addEventListener("DOMContentLoaded", () => {
     ballX += ballSpeedX;
     ballY += ballSpeedY;
 
+    // Bounce top/bottom
     if (ballY <= 0 || ballY + ballSize >= canvas.height) ballSpeedY *= -1;
 
-    if (ballX <= paddleWidth && ballY + ballSize >= leftPaddleY && ballY <= leftPaddleY + playerPaddleHeight) {
+    // Player paddle hit
+    if (
+      ballX <= paddleWidth &&
+      ballY + ballSize >= leftPaddleY &&
+      ballY <= leftPaddleY + playerPaddleHeight
+    ) {
       ballX = paddleWidth;
       ballSpeedX = Math.abs(ballSpeedX) * 1.05;
       ballSpeedY += (Math.random() - 0.5) * 1.2;
     }
 
-    if (ballX + ballSize >= canvas.width - paddleWidth &&
-        ballY + ballSize >= rightPaddleY &&
-        ballY <= rightPaddleY + aiPaddleHeight) {
+    // AI paddle hit
+    if (
+      ballX + ballSize >= canvas.width - paddleWidth &&
+      ballY + ballSize >= rightPaddleY &&
+      ballY <= rightPaddleY + aiPaddleHeight
+    ) {
       ballX = canvas.width - paddleWidth - ballSize;
       ballSpeedX = -Math.abs(ballSpeedX) * 1.05;
       ballSpeedY += (Math.random() - 0.5) * 1.0;
     }
 
-    if (ballX + ballSize < 0) { endRound(false); return; }
-    if (ballX > canvas.width) { endRound(true); return; }
+    // Out of bounds
+    if (ballX + ballSize < 0) {
+      endRound(false);
+      return;
+    }
+    if (ballX > canvas.width) {
+      endRound(true);
+      return;
+    }
 
+    // Player paddle move (keyboard)
     const step = 6;
     if ((keys["w"] || keys["arrowup"]) && leftPaddleY > 0) leftPaddleY -= step;
-    if ((keys["s"] || keys["arrowdown"]) && leftPaddleY + playerPaddleHeight < canvas.height) leftPaddleY += step;
+    if ((keys["s"] || keys["arrowdown"]) && leftPaddleY + playerPaddleHeight < canvas.height)
+      leftPaddleY += step;
 
+    // AI paddle movement
     const aiSpeed = difficulty === "easy" ? 3 : difficulty === "normal" ? 5 : 7;
     const aiCenter = rightPaddleY + aiPaddleHeight / 2;
     if (aiCenter < ballY + ballSize / 2 - 10) rightPaddleY += aiSpeed;
@@ -174,12 +205,21 @@ document.addEventListener("DOMContentLoaded", () => {
     step();
   }
 
+  // ✅ FIXED SECTION
   startBtn.addEventListener("click", () => {
     difficulty = difficultySelect.value;
 
-    if (difficulty === "easy") aiPaddleHeight = 60;
-    else if (difficulty === "normal") aiPaddleHeight = 80;
-    else if (difficulty === "hard") aiPaddleHeight = 100;
+    // Adjust paddle sizes based on difficulty
+    if (difficulty === "easy") {
+      playerPaddleHeight = 100; // Player easier
+      aiPaddleHeight = 60;      // AI smaller
+    } else if (difficulty === "normal") {
+      playerPaddleHeight = 80;
+      aiPaddleHeight = 80;
+    } else if (difficulty === "hard") {
+      playerPaddleHeight = 60;  // Player smaller
+      aiPaddleHeight = 100;     // AI harder
+    }
 
     resetPaddles();
     menu.classList.add("hidden");
@@ -194,6 +234,7 @@ document.addEventListener("DOMContentLoaded", () => {
     canvas.style.display = "none";
   });
 
+  // Init
   canvas.style.display = "none";
   resetPaddles();
   resetBall();
