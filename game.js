@@ -24,30 +24,30 @@ let gamesPlayed = 0;
 let running = false;
 let difficulty = "easy";
 
-// ✅ Difficulty setup
+// ✅ Corrected difficulty setup
 function setDifficulty(level) {
   difficulty = level;
   if (level === "easy") {
-    playerHeight = 130;  // YOU larger
-    aiHeight = 70;       // AI smaller
-    aiSpeed = 3;
+    playerHeight = 130;  // YOU big paddle
+    aiHeight = 70;       // AI small paddle
+    aiSpeed = 2;         // AI slower
     ballBaseSpeed = 3;
   } else if (level === "normal") {
-    playerHeight = 100;
+    playerHeight = 100;  // Equal
     aiHeight = 100;
-    aiSpeed = 5;
+    aiSpeed = 4;
     ballBaseSpeed = 4;
   } else if (level === "hard") {
     playerHeight = 70;   // YOU smaller
     aiHeight = 130;      // AI larger
-    aiSpeed = 7;
+    aiSpeed = 6;         // AI faster
     ballBaseSpeed = 5;
   }
 }
 
 // ✅ Initialize Game
 function initGame() {
-  setDifficulty(difficulty); // Ensure correct sizes before start
+  setDifficulty(difficulty); // apply paddle sizes first
 
   playerY = canvas.height / 2 - playerHeight / 2;
   aiY = canvas.height / 2 - aiHeight / 2;
@@ -96,7 +96,7 @@ function draw() {
   // Score Display
   ctx.fillStyle = "#fff";
   ctx.font = "16px Poppins";
-  ctx.fillText(`Games: ${gamesPlayed} | Wins: ${scorePlayer} | AI: ${scoreAI}`, 400 - 100, 30);
+  ctx.fillText(`Games: ${gamesPlayed} | Wins: ${scorePlayer} | AI: ${scoreAI}`, canvas.width / 2 - 100, 30);
 
   // Player paddle (LEFT)
   ctx.fillStyle = "#ff66a3";
@@ -125,11 +125,10 @@ function draw() {
   if (upPressed && playerY > 0) playerY -= 7;
   if (downPressed && playerY + playerHeight < canvas.height) playerY += 7;
 
-  // AI tracking (smooth)
+  // AI tracking
   const aiCenter = aiY + aiHeight / 2;
   if (aiCenter < ballY - 20) aiY += aiSpeed;
   else if (aiCenter > ballY + 20) aiY -= aiSpeed;
-
   aiY = Math.max(0, Math.min(canvas.height - aiHeight, aiY));
 
   // Player collision
