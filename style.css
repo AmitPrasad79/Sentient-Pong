@@ -80,38 +80,181 @@ body {
   max-height: 500px;
 }
 
-#menu, #gameOver {
-  text-align: center;
-  margin-bottom: 20px;
+/* --------------- Sentient Neon UI (paste at end of style.css) --------------- */
+
+* { box-sizing: border-box; }
+
+/* page */
+html,body{
+  height:100%;
+  margin:0;
+  font-family: "Inter", Arial, Helvetica, sans-serif;
+  background: #08060a; /* deep dark */
+  color: #fff;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
 }
 
-button {
-  background: #444;
-  border: none;
-  padding: 10px 20px;
-  font-size: 16px;
-  color: white;
-  cursor: pointer;
-  border-radius: 8px;
-}
-
-button:hover {
-  background: #666;
-}
-
-.hidden {
-  display: none;
-}
-
+/* ensure background canvas is visible (overrides any generic canvas:hidden rules) */
 #bgCanvas {
+  display: block !important;
   position: fixed;
-  top: 0; left: 0;
+  inset: 0;
   width: 100%;
   height: 100%;
-  z-index: -1; 
-  background: #111; 
+  z-index: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(5,3,10,1), rgba(6,0,12,0.95));
 }
 
-#bgCanvas {
-  display: block; /* make sure snowfall is always visible */
+/* center page content and keep things stacked above bg */
+.page-center {
+  position: relative;
+  z-index: 5; /* above bgCanvas */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+  flex-direction: column;
+}
+
+/* --- Panel (menu / gameOver) styling to match screenshot --- */
+#menu, #gameOver {
+  width: min(92vw, 740px);
+  max-width: 740px;
+  border-radius: 18px;
+  padding: 36px 40px;
+  text-align: center;
+  background: linear-gradient(180deg, rgba(23,6,30,0.58), rgba(12,3,18,0.56));
+  border: 2px solid rgba(255, 45, 180, 0.12);
+  box-shadow:
+    0 8px 40px rgba(160, 30, 160, 0.08),
+    0 0 48px rgba(200, 40, 200, 0.06),
+    inset 0 0 22px rgba(255, 20, 120, 0.02);
+  backdrop-filter: blur(8px) saturate(110%);
+  margin: 12px auto;
+  transition: transform .28s ease, box-shadow .28s ease;
+}
+
+/* Neon inner border gloss */
+#menu::before, #gameOver::before {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: -2px;
+  border-radius: 20px;
+  box-shadow: 0 0 36px rgba(255, 50, 170, 0.14);
+  z-index: 0;
+}
+
+/* ensure content sits above pseudo border */
+#menu > * { position: relative; z-index: 1; }
+
+/* Title style */
+#menu h1 {
+  margin: 0 0 10px;
+  font-size: 2.05rem;
+  letter-spacing: -0.02em;
+  color: #ff49d7;
+  text-shadow: 0 8px 36px rgba(255, 66, 170, 0.22), 0 0 8px rgba(255, 66, 170, 0.12);
+  font-weight: 700;
+}
+
+/* description */
+#menu p {
+  margin: 6px 0 18px;
+  color: #e6dff0;
+  opacity: 0.95;
+  line-height: 1.45;
+  font-size: 0.98rem;
+}
+
+/* label */
+#menu label { color: #e8dff8; display:block; margin-bottom:8px; font-weight:600; }
+
+/* dropdown (neon pill) */
+#difficulty {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  padding: 10px 44px 10px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,80,200,0.16);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.06)),
+    url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"><polyline points="3,7 10,14 17,7" stroke="%23ff49d7" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>') no-repeat right 12px center;
+  background-size: 18px;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+  transition: transform .18s ease, box-shadow .18s ease;
+  box-shadow: 0 8px 26px rgba(120,20,120,0.04);
+}
+
+/* dropdown focus */
+#difficulty:focus {
+  box-shadow: 0 8px 36px rgba(255,40,180,0.12);
+  transform: translateY(-2px);
+}
+
+/* Neon start button */
+#startBtn {
+  margin-top: 14px;
+  display: inline-block;
+  padding: 12px 28px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  color: #fff;
+  font-weight: 700;
+  font-size: 1rem;
+  background: linear-gradient(90deg, #ff49d7 0%, #9b3bff 100%);
+  box-shadow: 0 10px 40px rgba(155, 60, 255, 0.16), 0 0 30px rgba(255, 60, 170, 0.08);
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+
+/* subtle hover */
+#startBtn:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 16px 56px rgba(155, 60, 255, 0.24), 0 0 42px rgba(255, 60, 170, 0.14);
+}
+
+/* smaller hint text */
+#menu small { display:block; color:#d9cfe6; margin-top:14px; opacity:0.9; }
+
+/* footer */
+#footer {
+  margin-top: 14px;
+  z-index: 6;
+  color: #ddd;
+  font-size: 0.9rem;
+  text-align: center;
+  text-shadow: 0 0 6px rgba(255,50,170,0.06);
+}
+
+/* ensure game canvas sits above bg but below UI */
+#gameCanvas {
+  position: relative;
+  z-index: 3;
+  display: none; /* preserved: JS toggles to block when starting */
+  margin-top: 18px;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* gameOver panel uses same neon style */
+#gameOver {
+  display: none; /* shown by your JS on end */
+  width: min(88vw, 640px);
+  margin: 16px auto;
+}
+
+/* Responsive tweaks */
+@media (max-width:520px) {
+  #menu { padding: 22px; border-radius: 14px; }
+  #menu h1 { font-size: 1.6rem; }
+  #difficulty { padding-right: 40px; }
+  #startBtn { width: 85%; padding: 12px; }
 }
