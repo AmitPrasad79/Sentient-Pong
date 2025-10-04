@@ -174,28 +174,47 @@ document.addEventListener("DOMContentLoaded", () => {
     step();
   }
 
-  startBtn.addEventListener("click", () => {
-    difficulty = difficultySelect.value;
+startBtn.addEventListener("click", () => {
+  const select = document.getElementById("difficulty");
+  difficulty = select.value;
 
-    if (difficulty === "easy") aiPaddleHeight = 100;
-    else if (difficulty === "normal") aiPaddleHeight = 80;
-    else if (difficulty === "hard") aiPaddleHeight = 60;
+  // ✅ Correct paddle and AI settings by difficulty
+  if (difficulty === "easy") {
+    // Player has big paddle, AI small & slower
+    playerPaddleHeight = 120;
+    aiPaddleHeight = 70;
+    aiSpeed = 3;
+    ballBaseSpeed = 3;
+  } else if (difficulty === "normal") {
+    // Medium for both
+    playerPaddleHeight = 90;
+    aiPaddleHeight = 90;
+    aiSpeed = 5;
+    ballBaseSpeed = 4;
+  } else if (difficulty === "hard") {
+    // Player small paddle, AI larger & faster
+    playerPaddleHeight = 60;
+    aiPaddleHeight = 110;
+    aiSpeed = 7;
+    ballBaseSpeed = 5;
+  }
 
-    resetPaddles();
-    menu.classList.add("hidden");
-    gameOverScreen.classList.add("hidden");
-    applyCanvasScale();
-    startCountdownAndRun();
-  });
+  // Apply to the paddles
+  leftPaddleY = (canvas.height - playerPaddleHeight) / 2;
+  rightPaddleY = (canvas.height - aiPaddleHeight) / 2;
 
-  restartBtn.addEventListener("click", () => {
-    gameOverScreen.classList.add("hidden");
-    menu.classList.remove("hidden");
-    canvas.style.display = "none";
-  });
+  // Reset the ball
+  ballSpeedX = (Math.random() > 0.5 ? 1 : -1) * ballBaseSpeed;
+  ballSpeedY = (Math.random() * 2 - 1) * ballBaseSpeed;
 
-  canvas.style.display = "none";
-  resetPaddles();
-  resetBall();
-  applyCanvasScale();
+  // Reset scores and UI
+  leftScore = 0;
+  rightScore = 0;
+  menu.classList.add("hidden");
+  gameOverScreen.classList.add("hidden");
+  canvas.style.display = "block";
+
+  gameRunning = true;
+  requestAnimationFrame(draw);
 });
+
