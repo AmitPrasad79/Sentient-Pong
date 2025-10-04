@@ -7,10 +7,7 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <!-- Falling background canvas -->
   <canvas id="bgCanvas"></canvas>
-
-  <!-- Menu Screen -->
   <div id="menu">
     <h1>🏓 Sentient Pong</h1>
     <p>
@@ -21,7 +18,6 @@
       <strong>Score = survival time.</strong>
     </p>
 
-    <!-- Difficulty dropdown -->
     <label for="difficulty">Choose Difficulty:</label>
     <select id="difficulty">
       <option value="easy" selected>Easy</option>
@@ -33,22 +29,17 @@
     <button id="startBtn">Start Game</button>
   </div>
 
-  <!-- Game Canvas -->
   <canvas id="gameCanvas" width="800" height="500"></canvas>
-
-  <!-- Game Over Screen -->
   <div id="gameOver" class="hidden">
     <h2 id="winner"></h2>
     <button id="restartBtn">Play Again</button>
   </div>
 
-  <!-- Footer -->
   <div id="footer">
     Made with ❤️ by 
     <a href="https://twitter.com/0xBalls" target="_blank">@0xBalls</a>
   </div>
 
-  <!-- Scripts -->
   <script src="fall.js"></script>
   <script src="game.js"></script>
 </body>
