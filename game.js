@@ -129,7 +129,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (ballY <= 0 || ballY + ballSize >= canvas.height) ballSpeedY *= -1;
 
-    // Player collision
     if (
       ballX <= paddleWidth &&
       ballY + ballSize >= leftPaddleY &&
@@ -140,7 +139,6 @@ document.addEventListener("DOMContentLoaded", () => {
       ballSpeedY += (Math.random() - 0.5) * 1.2;
     }
 
-    // AI collision
     if (
       ballX + ballSize >= canvas.width - paddleWidth &&
       ballY + ballSize >= rightPaddleY &&
@@ -151,30 +149,20 @@ document.addEventListener("DOMContentLoaded", () => {
       ballSpeedY += (Math.random() - 0.5) * 1.0;
     }
 
-    // Out of bounds
     if (ballX + ballSize < 0) return endRound(false);
     if (ballX > canvas.width) return endRound(true);
 
-    // Player keyboard control
     const step = 6;
     if ((keys["w"] || keys["arrowup"]) && leftPaddleY > 0) leftPaddleY -= step;
     if ((keys["s"] || keys["arrowdown"]) && leftPaddleY + playerPaddleHeight < canvas.height)
       leftPaddleY += step;
 
-    // 🔥 Smarter, smoother AI
     let targetY = ballY - aiPaddleHeight / 2 + ballSize / 2;
-
-    // Difficulty modifiers
     let aiSmooth = difficulty === "easy" ? 0.05 : difficulty === "normal" ? 0.1 : 0.18;
     let aiError = difficulty === "easy" ? 60 : difficulty === "normal" ? 30 : 10;
 
-    // Add small randomness to make it less "psychic"
     targetY += (Math.random() - 0.5) * aiError;
-
-    // Smoothly follow target
     rightPaddleY += (targetY - rightPaddleY) * aiSmooth;
-
-    // Keep inside bounds
     rightPaddleY = Math.max(0, Math.min(rightPaddleY, canvas.height - aiPaddleHeight));
 
     requestAnimationFrame(draw);
