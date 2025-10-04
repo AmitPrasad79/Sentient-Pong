@@ -96,7 +96,7 @@ function endRound(playerWon) {
   if (playerWon) playerWins++;
   else aiWins++;
 
-  winnerText.innerText = playerWon ? "🎉 You Win!" : "🤖 AI Wins!";
+  winnerText.innerText = playerWon ? "🎉 You Win!" : "💀 You Lose!";
   canvas.style.display = "none";
   gameOverScreen.classList.remove("hidden");
 }
