@@ -1,177 +1,58 @@
-/* ===== Base Page Setup ===== */
 body {
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-  background: radial-gradient(circle at top, #0d0d0d 0%, #000 100%);
-  color: #fff;
-  font-family: "Poppins", sans-serif;
+  background: black;
+  color: white;
+  font-family: Arial, sans-serif;
   display: flex;
-  flex-direction: column;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   height: 100vh;
+  margin: 0;
+  flex-direction: column;
 }
 
-/* ===== Background Canvas ===== */
-#bgCanvas {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 0;
-}
-
-/* ===== Menu Section ===== */
-#menu {
-  z-index: 2;
-  text-align: center;
-  background: rgba(25, 25, 25, 0.85);
-  border: 2px solid #ff66a3;
-  border-radius: 16px;
-  padding: 30px 40px;
-  box-shadow: 0 0 20px rgba(255, 102, 163, 0.5);
-  max-width: 400px;
-}
-
-#menu h1 {
-  margin-bottom: 20px;
-  color: #ff66a3;
-  font-size: 2em;
-  text-shadow: 0 0 10px #ff66a3;
-}
-
-#menu p {
-  font-size: 14px;
-  line-height: 1.4;
-  color: #eee;
-}
-
-/* ===== Custom Dropdown ===== */
-.custom-select {
-  position: relative;
-  display: inline-block;
-  width: 200px;
-  margin-top: 10px;
-  user-select: none;
-}
-
-.selected {
-  background: #222;
-  color: #ff66a3;
-  padding: 10px;
-  border: 1px solid #ff66a3;
-  border-radius: 8px;
-  cursor: pointer;
-  text-align: center;
-  transition: background 0.3s;
-}
-
-.selected:hover {
-  background: #333;
-}
-
-.options {
-  display: none;
-  position: absolute;
-  top: 45px;
-  width: 100%;
-  background: #222;
-  border: 1px solid #ff66a3;
-  border-radius: 8px;
-  overflow: hidden;
-  z-index: 3;
-}
-
-.option {
-  padding: 10px;
-  cursor: pointer;
-  text-align: center;
-  color: #fff;
-}
-
-.option:hover {
-  background: #ff66a3;
-  color: #000;
-}
-
-/* ===== Buttons ===== */
-button {
-  background: #ff66a3;
-  color: #fff;
-  border: none;
-  border-radius: 10px;
-  padding: 12px 24px;
-  font-size: 16px;
-  cursor: pointer;
-  box-shadow: 0 0 10px rgba(255, 102, 163, 0.4);
-  transition: all 0.25s ease;
-}
-
-button:hover {
-  background: #ff3385;
-  transform: scale(1.05);
-}
-
-/* ===== Game Canvas ===== */
 #gameCanvas {
-  display: none;
-  border: 3px solid #ff66a3;
-  border-radius: 16px;
-  box-shadow: 0 0 25px rgba(255, 102, 163, 0.6);
   background: #111;
-  z-index: 1;
-}
+  border: 2px solid white;
+  display: none;
 
-/* ===== Game Over Screen ===== */
-#gameOver {
-  text-align: center;
-  background: rgba(20, 20, 20, 0.9);
-  border: 2px solid #ff66a3;
-  border-radius: 16px;
-  padding: 30px 40px;
-  box-shadow: 0 0 20px rgba(255, 102, 163, 0.5);
-  z-index: 3;
-}
-
-#gameOver h2 {
-  font-size: 2em;
-  color: #ff66a3;
-  text-shadow: 0 0 10px #ff66a3;
-  margin-bottom: 20px;
-}
-
-/* ===== Footer ===== */
-#footer {
-  position: fixed;
-  bottom: 15px;
-  font-size: 14px;
-  text-align: center;
-  color: #aaa;
-  z-index: 2;
-}
-
-#footer a {
-  color: #ff66a3;
-  text-decoration: none;
-}
-
-#footer a:hover {
-  text-decoration: underline;
-}
-
-/* ===== Hidden Utility ===== */
-.hidden {
-  display: none !important;
-}
-
-/* ===== Smooth Fade Animation ===== */
-@keyframes fadeIn {
-  from { opacity: 0; transform: scale(0.98); }
-  to { opacity: 1; transform: scale(1); }
+  width: 90vw;       
+  height: auto;      
+  max-width: 800px;  
+  max-height: 500px;
 }
 
 #menu, #gameOver {
-  animation: fadeIn 0.4s ease forwards;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+button {
+  background: #444;
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  color: white;
+  cursor: pointer;
+  border-radius: 8px;
+}
+
+button:hover {
+  background: #666;
+}
+
+.hidden {
+  display: none;
+}
+
+#bgCanvas {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1; 
+  background: #111; 
+}
+
+#bgCanvas {
+  display: block; /* make sure snowfall is always visible */
 }
