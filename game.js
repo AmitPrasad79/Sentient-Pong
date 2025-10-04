@@ -1,4 +1,4 @@
-// 🎮 Sentient Pong Game Script
+// 🎮 Sentient Pong Game Script — Fixed Player/AI paddle sizes
 
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
@@ -11,60 +11,39 @@ const restartBtn = document.getElementById("restartBtn");
 let gameRunning = false;
 let difficulty = "easy";
 
-// ===== Game Variables =====
 let ballX, ballY, ballSpeedX, ballSpeedY;
-let leftPaddleY, rightPaddleY;
+let playerY, aiY;
 let paddleWidth = 12;
-let playerPaddleHeight, aiPaddleHeight;
+let playerHeight, aiHeight;
 let aiSpeed, ballBaseSpeed;
-let leftScore = 0;
-let rightScore = 0;
-
-// ===== Utility =====
-function resetBall() {
-  ballX = canvas.width / 2;
-  ballY = canvas.height / 2;
-  ballSpeedX = (Math.random() > 0.5 ? 1 : -1) * ballBaseSpeed;
-  ballSpeedY = (Math.random() * 2 - 1) * ballBaseSpeed;
-}
-
-function drawRect(x, y, w, h, color) {
-  ctx.fillStyle = color;
-  ctx.fillRect(x, y, w, h);
-}
-
-function drawCircle(x, y, r, color) {
-  ctx.fillStyle = color;
-  ctx.beginPath();
-  ctx.arc(x, y, r, 0, Math.PI * 2);
-  ctx.fill();
-}
-
-function drawText(text, x, y, color) {
-  ctx.fillStyle = color;
-  ctx.font = "20px Poppins";
-  ctx.fillText(text, x, y);
-}
 
 // ===== Difficulty Settings =====
 function setDifficulty(level) {
   difficulty = level;
   if (level === "easy") {
-    playerPaddleHeight = 130;
-    aiPaddleHeight = 70;
+    playerHeight = 130;  // 🟢 Player big
+    aiHeight = 70;       // 🔴 AI small
     aiSpeed = 3;
     ballBaseSpeed = 3;
   } else if (level === "normal") {
-    playerPaddleHeight = 90;
-    aiPaddleHeight = 90;
+    playerHeight = 100;
+    aiHeight = 100;
     aiSpeed = 5;
     ballBaseSpeed = 4;
   } else if (level === "hard") {
-    playerPaddleHeight = 70;
-    aiPaddleHeight = 110;
+    playerHeight = 70;   // 🔴 Player small
+    aiHeight = 130;      // 🟢 AI big
     aiSpeed = 7;
     ballBaseSpeed = 5;
   }
+}
+
+// ===== Ball Reset =====
+function resetBall() {
+  ballX = canvas.width / 2;
+  ballY = canvas.height / 2;
+  ballSpeedX = (Math.random() > 0.5 ? 1 : -1) * ballBaseSpeed;
+  ballSpeedY = (Math.random() * 2 - 1) * ballBaseSpeed;
 }
 
 // ===== Start Game =====
@@ -75,43 +54,41 @@ startBtn.addEventListener("click", () => {
   canvas.width = 800;
   canvas.height = 500;
 
-  leftPaddleY = (canvas.height - playerPaddleHeight) / 2;
-  rightPaddleY = (canvas.height - aiPaddleHeight) / 2;
+  playerY = (canvas.height - playerHeight) / 2;
+  aiY = (canvas.height - aiHeight) / 2;
 
   resetBall();
 
-  leftScore = 0;
-  rightScore = 0;
   menu.classList.add("hidden");
   gameOverScreen.classList.add("hidden");
   canvas.style.display = "block";
-
   gameRunning = true;
+
   requestAnimationFrame(draw);
 });
 
-// ===== Restart Game =====
+// ===== Restart =====
 restartBtn.addEventListener("click", () => {
   gameOverScreen.classList.add("hidden");
   menu.classList.remove("hidden");
   canvas.style.display = "none";
 });
 
-// ===== Input Controls =====
+// ===== Player Control =====
 document.addEventListener("mousemove", (e) => {
   const rect = canvas.getBoundingClientRect();
-  let root = e.clientY - rect.top;
-  leftPaddleY = root - playerPaddleHeight / 2;
+  playerY = e.clientY - rect.top - playerHeight / 2;
 });
 
-// ===== AI Logic =====
+// ===== AI Movement =====
 function moveAI() {
-  const aiCenter = rightPaddleY + aiPaddleHeight / 2;
-  if (aiCenter < ballY - 35) rightPaddleY += aiSpeed;
-  else if (aiCenter > ballY + 35) rightPaddleY -= aiSpeed;
+  const aiCenter = aiY + aiHeight / 2;
+  // Smooth follow — add a slight “delay” for realism
+  const followSpeed = aiSpeed * 0.8;
+  if (aiCenter < ballY - 20) aiY += followSpeed;
+  else if (aiCenter > ballY + 20) aiY -= followSpeed;
 
-  // Keep AI within bounds
-  rightPaddleY = Math.max(0, Math.min(canvas.height - aiPaddleHeight, rightPaddleY));
+  aiY = Math.max(0, Math.min(canvas.height - aiHeight, aiY));
 }
 
 // ===== Ball Movement =====
@@ -122,42 +99,52 @@ function moveBall() {
   // Bounce top/bottom
   if (ballY < 0 || ballY > canvas.height) ballSpeedY = -ballSpeedY;
 
-  // Left paddle collision
+  // Player paddle collision (left)
   if (
     ballX - 10 < paddleWidth &&
-    ballY > leftPaddleY &&
-    ballY < leftPaddleY + playerPaddleHeight
+    ballY > playerY &&
+    ballY < playerY + playerHeight
   ) {
-    ballSpeedX = -ballSpeedX;
+    ballSpeedX = Math.abs(ballSpeedX); // always move right
     ballSpeedY += (Math.random() - 0.5) * 2;
   }
 
-  // Right paddle collision
+  // AI paddle collision (right)
   if (
     ballX + 10 > canvas.width - paddleWidth &&
-    ballY > rightPaddleY &&
-    ballY < rightPaddleY + aiPaddleHeight
+    ballY > aiY &&
+    ballY < aiY + aiHeight
   ) {
-    ballSpeedX = -ballSpeedX;
+    ballSpeedX = -Math.abs(ballSpeedX); // always move left
     ballSpeedY += (Math.random() - 0.5) * 2;
   }
 
-  // Missed ball (game over)
-  if (ballX < 0) {
-    endGame("AI Wins!");
-  } else if (ballX > canvas.width) {
-    endGame("You Win!");
-  }
+  // Out of bounds → Game over
+  if (ballX < 0) endGame("🤖 AI Wins!");
+  else if (ballX > canvas.width) endGame("🏆 You Win!");
 }
 
 // ===== Draw Everything =====
 function draw() {
   if (!gameRunning) return;
 
-  drawRect(0, 0, canvas.width, canvas.height, "#000");
-  drawRect(0, leftPaddleY, paddleWidth, playerPaddleHeight, "#ff66a3");
-  drawRect(canvas.width - paddleWidth, rightPaddleY, paddleWidth, aiPaddleHeight, "#ff66a3");
-  drawCircle(ballX, ballY, 10, "#fff");
+  // Background
+  ctx.fillStyle = "#000";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Player paddle (Left)
+  ctx.fillStyle = "#ff66a3";
+  ctx.fillRect(0, playerY, paddleWidth, playerHeight);
+
+  // AI paddle (Right)
+  ctx.fillStyle = "#a966ff";
+  ctx.fillRect(canvas.width - paddleWidth, aiY, paddleWidth, aiHeight);
+
+  // Ball
+  ctx.beginPath();
+  ctx.arc(ballX, ballY, 10, 0, Math.PI * 2);
+  ctx.fillStyle = "#fff";
+  ctx.fill();
 
   moveAI();
   moveBall();
@@ -166,9 +153,9 @@ function draw() {
 }
 
 // ===== Game Over =====
-function endGame(message) {
+function endGame(msg) {
   gameRunning = false;
   canvas.style.display = "none";
+  document.getElementById("gameOverMessage").textContent = msg;
   gameOverScreen.classList.remove("hidden");
-  document.getElementById("gameOverMessage").textContent = message;
 }
