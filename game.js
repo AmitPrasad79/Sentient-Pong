@@ -1,185 +1,201 @@
-const canvas = document.getElementById("gameCanvas");
-const ctx = canvas.getContext("2d");
+document.addEventListener("DOMContentLoaded", () => {
+  const canvas = document.getElementById("gameCanvas");
+  const ctx = canvas.getContext("2d");
 
-const menu = document.getElementById("menu");
-const gameOverScreen = document.getElementById("gameOver");
-const startBtn = document.getElementById("startBtn");
-const restartBtn = document.getElementById("restartBtn");
-const winnerText = document.getElementById("winner");
-const difficultySelect = document.getElementById("difficulty");
+  const menu = document.getElementById("menu");
+  const startBtn = document.getElementById("startBtn");
+  const restartBtn = document.getElementById("restartBtn");
+  const gameOverScreen = document.getElementById("gameOver");
+  const winnerText = document.getElementById("winner");
+  const difficultySelect = document.getElementById("difficulty");
 
-let gameRunning = false;
-let player, ai, ball;
-let playerScore = 0, aiScore = 0, gamesPlayed = 0;
-let gameLoop;
+  let difficulty = "easy";
+  let gameRunning = false;
+  let countdown = 0;
 
-// ======== OBJECTS ==========
-class Paddle {
-  constructor(x, width, height, speed, isAI = false) {
-    this.x = x;
-    this.y = canvas.height / 2 - height / 2;
-    this.width = width;
-    this.height = height;
-    this.speed = speed;
-    this.isAI = isAI;
+  const paddleWidth = 15;
+  const playerPaddleHeight = 80;
+  let aiPaddleHeight = 60;
+  let leftPaddleY = 0;
+  let rightPaddleY = 0;
+
+  const ballSize = 40;
+  const ballImage = new Image();
+  ballImage.src = "./assets/sentient.png";
+
+  let ballX = 0, ballY = 0, ballSpeedX = 0, ballSpeedY = 0;
+  let totalGames = 0;
+  let playerWins = 0;
+  let aiWins = 0;
+  let keys = {};
+
+  window.addEventListener("keydown", (e) => keys[e.key.toLowerCase()] = true);
+  window.addEventListener("keyup", (e) => keys[e.key.toLowerCase()] = false);
+
+  if (!canvas.width || canvas.width < 400) canvas.width = 800;
+  if (!canvas.height || canvas.height < 300) canvas.height = 450;
+
+  function applyCanvasScale() {
+    const maxW = window.innerWidth * 0.94;
+    const maxH = window.innerHeight * 0.84;
+    const scale = Math.min(maxW / canvas.width, maxH / canvas.height, 1);
+    canvas.style.width = Math.round(canvas.width * scale) + "px";
+    canvas.style.height = Math.round(canvas.height * scale) + "px";
+  }
+  window.addEventListener("resize", applyCanvasScale);
+  applyCanvasScale();
+
+  function handlePointerMove(clientY) {
+    const rect = canvas.getBoundingClientRect();
+    const y = clientY - rect.top;
+    leftPaddleY = y - playerPaddleHeight / 2;
+    leftPaddleY = Math.max(0, Math.min(leftPaddleY, canvas.height - playerPaddleHeight));
+  }
+  canvas.addEventListener("mousemove", (e) => { if (gameRunning) handlePointerMove(e.clientY); });
+  canvas.addEventListener("touchmove", (e) => {
+    if (!gameRunning) return;
+    e.preventDefault();
+    handlePointerMove(e.touches[0].clientY);
+  }, { passive: false });
+
+  function resetBall() {
+    ballX = canvas.width / 2 - ballSize / 2;
+    ballY = canvas.height / 2 - ballSize / 2;
+
+    const baseSpeed = difficulty === "easy" ? 2 : difficulty === "normal" ? 3.5 : 5;
+    ballSpeedX = (Math.random() > 0.5 ? 1 : -1) * baseSpeed;
+    ballSpeedY = (Math.random() * 2 - 1) * baseSpeed;
   }
 
-  move(up, down) {
-    if (this.isAI) return;
-    if (up && this.y > 0) this.y -= this.speed;
-    if (down && this.y + this.height < canvas.height) this.y += this.speed;
+  function resetPaddles() {
+    leftPaddleY = (canvas.height - playerPaddleHeight) / 2;
+    rightPaddleY = (canvas.height - aiPaddleHeight) / 2;
   }
 
-  draw() {
+  function drawPaddle(x, y, h) {
     ctx.fillStyle = "#fff";
-    ctx.fillRect(this.x, this.y, this.width, this.height);
-  }
-}
-
-class Ball {
-  constructor(size, speed) {
-    this.size = size;
-    this.reset(speed);
+    ctx.fillRect(x, y, paddleWidth, h);
   }
 
-  reset(speed) {
-    this.x = canvas.width / 2;
-    this.y = canvas.height / 2;
-    this.dx = Math.random() < 0.5 ? -speed : speed;
-    this.dy = (Math.random() - 0.5) * speed * 0.8;
-    this.speed = speed;
+  function drawBall() {
+    if (ballImage.complete && ballImage.naturalWidth) {
+      ctx.drawImage(ballImage, ballX, ballY, ballSize, ballSize);
+    } else {
+      ctx.fillStyle = "#ff66a3";
+      ctx.fillRect(ballX, ballY, ballSize, ballSize);
+    }
   }
 
-  draw() {
-    const img = new Image();
-    img.src = "sentient.png";
-    ctx.drawImage(img, this.x - this.size / 2, this.y - this.size / 2, this.size, this.size);
+  function drawScoreboard() {
+    ctx.font = "20px Arial";
+    ctx.fillStyle = "#fff";
+    ctx.textAlign = "center";
+    ctx.fillText(`Games: ${totalGames} | Wins: ${playerWins} | AI: ${aiWins}`, canvas.width / 2, 30);
   }
 
-  update(player, ai) {
-    this.x += this.dx;
-    this.y += this.dy;
+  function endRound(playerWon) {
+    gameRunning = false;
+    totalGames++;
+    if (playerWon) playerWins++;
+    else aiWins++;
 
-    if (this.y <= 0 || this.y >= canvas.height) this.dy *= -1;
+    winnerText.innerText = playerWon ? "🎉 You Win!" : "💀 You Lose!";
+    canvas.style.display = "none";
+    gameOverScreen.classList.remove("hidden");
+  }
 
-    // Player collision
-    if (
-      this.x - this.size / 2 < player.x + player.width &&
-      this.y > player.y &&
-      this.y < player.y + player.height
-    ) {
-      this.dx = Math.abs(this.speed);
+  function draw() {
+    if (!gameRunning) return;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#111";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    drawPaddle(0, leftPaddleY, playerPaddleHeight);
+    drawPaddle(canvas.width - paddleWidth, rightPaddleY, aiPaddleHeight);
+    drawBall();
+    drawScoreboard();
+
+    ballX += ballSpeedX;
+    ballY += ballSpeedY;
+
+    if (ballY <= 0 || ballY + ballSize >= canvas.height) ballSpeedY *= -1;
+
+    if (ballX <= paddleWidth && ballY + ballSize >= leftPaddleY && ballY <= leftPaddleY + playerPaddleHeight) {
+      ballX = paddleWidth;
+      ballSpeedX = Math.abs(ballSpeedX) * 1.05;
+      ballSpeedY += (Math.random() - 0.5) * 1.2;
     }
 
-    // AI collision
-    if (
-      this.x + this.size / 2 > ai.x &&
-      this.y > ai.y &&
-      this.y < ai.y + ai.height
-    ) {
-      this.dx = -Math.abs(this.speed);
+    if (ballX + ballSize >= canvas.width - paddleWidth &&
+        ballY + ballSize >= rightPaddleY &&
+        ballY <= rightPaddleY + aiPaddleHeight) {
+      ballX = canvas.width - paddleWidth - ballSize;
+      ballSpeedX = -Math.abs(ballSpeedX) * 1.05;
+      ballSpeedY += (Math.random() - 0.5) * 1.0;
     }
 
-    // Out of bounds
-    if (this.x < 0) return "AI";
-    if (this.x > canvas.width) return "Player";
-    return null;
+    if (ballX + ballSize < 0) { endRound(false); return; }
+    if (ballX > canvas.width) { endRound(true); return; }
+
+    const step = 6;
+    if ((keys["w"] || keys["arrowup"]) && leftPaddleY > 0) leftPaddleY -= step;
+    if ((keys["s"] || keys["arrowdown"]) && leftPaddleY + playerPaddleHeight < canvas.height) leftPaddleY += step;
+
+    const aiSpeed = difficulty === "easy" ? 3 : difficulty === "normal" ? 5 : 7;
+    const aiCenter = rightPaddleY + aiPaddleHeight / 2;
+    if (aiCenter < ballY + ballSize / 2 - 10) rightPaddleY += aiSpeed;
+    else if (aiCenter > ballY + ballSize / 2 + 10) rightPaddleY -= aiSpeed;
+    rightPaddleY = Math.max(0, Math.min(rightPaddleY, canvas.height - aiPaddleHeight));
+
+    requestAnimationFrame(draw);
   }
-}
 
-// ======== GAME CONTROL ==========
-function setDifficulty(level) {
-  switch (level) {
-    case "easy":
-      return {
-        playerHeight: 100,
-        aiHeight: 60,
-        ballSpeed: 4,
-        aiSpeed: 3,
-      };
-    case "normal":
-      return {
-        playerHeight: 80,
-        aiHeight: 80,
-        ballSpeed: 5,
-        aiSpeed: 4.5,
-      };
-    case "hard":
-      return {
-        playerHeight: 60,
-        aiHeight: 100,
-        ballSpeed: 6,
-        aiSpeed: 6,
-      };
+  function startCountdownAndRun() {
+    countdown = 3;
+    canvas.style.display = "block";
+    function step() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "#111";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.font = "72px Arial";
+      ctx.fillStyle = "#fff";
+      ctx.textAlign = "center";
+      ctx.fillText(countdown > 0 ? countdown : "Go!", canvas.width / 2, canvas.height / 2);
+      countdown--;
+      if (countdown >= -1) {
+        setTimeout(step, 700);
+      } else {
+        resetBall();
+        gameRunning = true;
+        requestAnimationFrame(draw);
+      }
+    }
+    step();
   }
-}
 
-function startGame() {
-  const difficulty = difficultySelect.value;
-  const config = setDifficulty(difficulty);
+  startBtn.addEventListener("click", () => {
+    difficulty = difficultySelect.value;
 
-  player = new Paddle(20, 10, config.playerHeight, 8);
-  ai = new Paddle(canvas.width - 30, 10, config.aiHeight, config.aiSpeed, true);
-  ball = new Ball(20, config.ballSpeed);
+    if (difficulty === "easy") aiPaddleHeight = 100;
+    else if (difficulty === "normal") aiPaddleHeight = 80;
+    else if (difficulty === "hard") aiPaddleHeight = 60;
 
-  menu.classList.add("hidden");
-  gameOverScreen.classList.add("hidden");
-  canvas.style.display = "block";
+    resetPaddles();
+    menu.classList.add("hidden");
+    gameOverScreen.classList.add("hidden");
+    applyCanvasScale();
+    startCountdownAndRun();
+  });
 
-  gameRunning = true;
-  gamesPlayed++;
-
-  gameLoop = setInterval(updateGame, 1000 / 60);
-}
-
-function updateGame() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  // Player control
-  const up = keys["ArrowUp"] || keys["w"];
-  const down = keys["ArrowDown"] || keys["s"];
-  player.move(up, down);
-
-  // AI movement
-  if (ball.y < ai.y + ai.height / 2) ai.y -= ai.speed;
-  if (ball.y > ai.y + ai.height / 2) ai.y += ai.speed;
-
-  ai.y = Math.max(0, Math.min(canvas.height - ai.height, ai.y));
-
-  // Ball update
-  const result = ball.update(player, ai);
-  if (result) endGame(result);
-
-  // Draw everything
-  ball.draw();
-  player.draw();
-  ai.draw();
-
-  // Score text
-  ctx.fillStyle = "#fff";
-  ctx.font = "18px Poppins";
-  ctx.fillText(`Games: ${gamesPlayed} | Wins: ${playerScore} | AI: ${aiScore}`, 350, 30);
-}
-
-function endGame(winner) {
-  clearInterval(gameLoop);
-  gameRunning = false;
-
-  if (winner === "Player") playerScore++;
-  else aiScore++;
+  restartBtn.addEventListener("click", () => {
+    gameOverScreen.classList.add("hidden");
+    menu.classList.remove("hidden");
+    canvas.style.display = "none";
+  });
 
   canvas.style.display = "none";
-  winnerText.textContent = winner === "Player" ? "You Win! 🎉" : "AI Wins 💀";
-  gameOverScreen.classList.remove("hidden");
-}
-
-// ======== EVENT HANDLERS ==========
-startBtn.addEventListener("click", startGame);
-restartBtn.addEventListener("click", () => {
-  menu.classList.remove("hidden");
-  gameOverScreen.classList.add("hidden");
+  resetPaddles();
+  resetBall();
+  applyCanvasScale();
 });
-
-const keys = {};
-document.addEventListener("keydown", (e) => (keys[e.key] = true));
-document.addEventListener("keyup", (e) => (keys[e.key] = false));
