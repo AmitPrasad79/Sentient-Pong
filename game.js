@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let countdown = 0;
 
   const paddleWidth = 15;
-  let playerPaddleHeight = 80; // must be let (so we can change it)
+  let playerPaddleHeight = 80;
   let aiPaddleHeight = 80;
   let leftPaddleY = 0;
   let rightPaddleY = 0;
@@ -32,11 +32,9 @@ document.addEventListener("DOMContentLoaded", () => {
   let aiWins = 0;
   let keys = {};
 
-  // Player movement keys
   window.addEventListener("keydown", (e) => (keys[e.key.toLowerCase()] = true));
   window.addEventListener("keyup", (e) => (keys[e.key.toLowerCase()] = false));
 
-  // Ensure proper canvas size
   if (!canvas.width || canvas.width < 400) canvas.width = 800;
   if (!canvas.height || canvas.height < 300) canvas.height = 450;
 
@@ -50,13 +48,13 @@ document.addEventListener("DOMContentLoaded", () => {
   window.addEventListener("resize", applyCanvasScale);
   applyCanvasScale();
 
-  // Player paddle follows mouse/touch
   function handlePointerMove(clientY) {
     const rect = canvas.getBoundingClientRect();
     const y = clientY - rect.top;
     leftPaddleY = y - playerPaddleHeight / 2;
     leftPaddleY = Math.max(0, Math.min(leftPaddleY, canvas.height - playerPaddleHeight));
   }
+
   canvas.addEventListener("mousemove", (e) => {
     if (gameRunning) handlePointerMove(e.clientY);
   });
@@ -73,7 +71,6 @@ document.addEventListener("DOMContentLoaded", () => {
   function resetBall() {
     ballX = canvas.width / 2 - ballSize / 2;
     ballY = canvas.height / 2 - ballSize / 2;
-
     const baseSpeed = difficulty === "easy" ? 2 : difficulty === "normal" ? 3.5 : 5;
     ballSpeedX = (Math.random() > 0.5 ? 1 : -1) * baseSpeed;
     ballSpeedY = (Math.random() * 2 - 1) * baseSpeed;
@@ -110,7 +107,6 @@ document.addEventListener("DOMContentLoaded", () => {
     totalGames++;
     if (playerWon) playerWins++;
     else aiWins++;
-
     winnerText.innerText = playerWon ? "🎉 You Win!" : "💀 You Lose!";
     canvas.style.display = "none";
     gameOverScreen.classList.remove("hidden");
@@ -131,10 +127,9 @@ document.addEventListener("DOMContentLoaded", () => {
     ballX += ballSpeedX;
     ballY += ballSpeedY;
 
-    // Bounce top/bottom
     if (ballY <= 0 || ballY + ballSize >= canvas.height) ballSpeedY *= -1;
 
-    // Player paddle hit
+    // Player collision
     if (
       ballX <= paddleWidth &&
       ballY + ballSize >= leftPaddleY &&
@@ -145,7 +140,7 @@ document.addEventListener("DOMContentLoaded", () => {
       ballSpeedY += (Math.random() - 0.5) * 1.2;
     }
 
-    // AI paddle hit
+    // AI collision
     if (
       ballX + ballSize >= canvas.width - paddleWidth &&
       ballY + ballSize >= rightPaddleY &&
@@ -157,26 +152,29 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Out of bounds
-    if (ballX + ballSize < 0) {
-      endRound(false);
-      return;
-    }
-    if (ballX > canvas.width) {
-      endRound(true);
-      return;
-    }
+    if (ballX + ballSize < 0) return endRound(false);
+    if (ballX > canvas.width) return endRound(true);
 
-    // Player paddle move (keyboard)
+    // Player keyboard control
     const step = 6;
     if ((keys["w"] || keys["arrowup"]) && leftPaddleY > 0) leftPaddleY -= step;
     if ((keys["s"] || keys["arrowdown"]) && leftPaddleY + playerPaddleHeight < canvas.height)
       leftPaddleY += step;
 
-    // AI paddle movement
-    const aiSpeed = difficulty === "easy" ? 3 : difficulty === "normal" ? 5 : 7;
-    const aiCenter = rightPaddleY + aiPaddleHeight / 2;
-    if (aiCenter < ballY + ballSize / 2 - 10) rightPaddleY += aiSpeed;
-    else if (aiCenter > ballY + ballSize / 2 + 10) rightPaddleY -= aiSpeed;
+    // 🔥 Smarter, smoother AI
+    let targetY = ballY - aiPaddleHeight / 2 + ballSize / 2;
+
+    // Difficulty modifiers
+    let aiSmooth = difficulty === "easy" ? 0.05 : difficulty === "normal" ? 0.1 : 0.18;
+    let aiError = difficulty === "easy" ? 60 : difficulty === "normal" ? 30 : 10;
+
+    // Add small randomness to make it less "psychic"
+    targetY += (Math.random() - 0.5) * aiError;
+
+    // Smoothly follow target
+    rightPaddleY += (targetY - rightPaddleY) * aiSmooth;
+
+    // Keep inside bounds
     rightPaddleY = Math.max(0, Math.min(rightPaddleY, canvas.height - aiPaddleHeight));
 
     requestAnimationFrame(draw);
@@ -205,20 +203,18 @@ document.addEventListener("DOMContentLoaded", () => {
     step();
   }
 
-  // ✅ FIXED SECTION
   startBtn.addEventListener("click", () => {
     difficulty = difficultySelect.value;
 
-    // Adjust paddle sizes based on difficulty
     if (difficulty === "easy") {
-      playerPaddleHeight = 100; // Player easier
-      aiPaddleHeight = 60;      // AI smaller
+      playerPaddleHeight = 100;
+      aiPaddleHeight = 60;
     } else if (difficulty === "normal") {
       playerPaddleHeight = 80;
       aiPaddleHeight = 80;
-    } else if (difficulty === "hard") {
-      playerPaddleHeight = 60;  // Player smaller
-      aiPaddleHeight = 100;     // AI harder
+    } else {
+      playerPaddleHeight = 60;
+      aiPaddleHeight = 100;
     }
 
     resetPaddles();
@@ -234,7 +230,6 @@ document.addEventListener("DOMContentLoaded", () => {
     canvas.style.display = "none";
   });
 
-  // Init
   canvas.style.display = "none";
   resetPaddles();
   resetBall();
