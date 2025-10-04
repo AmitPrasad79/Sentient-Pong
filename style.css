@@ -81,180 +81,166 @@ body {
 }
 
 /* --------------- Sentient Neon UI (paste at end of style.css) --------------- */
+/* === Sentient Pong Neon UI - Polished Glow === */
 
-* { box-sizing: border-box; }
-
-/* page */
-html,body{
-  height:100%;
-  margin:0;
-  font-family: "Inter", Arial, Helvetica, sans-serif;
-  background: #08060a; /* deep dark */
-  color: #fff;
-  -webkit-font-smoothing:antialiased;
-  -moz-osx-font-smoothing:grayscale;
-}
-
-/* ensure background canvas is visible (overrides any generic canvas:hidden rules) */
-#bgCanvas {
-  display: block !important;
-  position: fixed;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 0;
-  pointer-events: none;
-  background: linear-gradient(180deg, rgba(5,3,10,1), rgba(6,0,12,0.95));
-}
-
-/* center page content and keep things stacked above bg */
-.page-center {
-  position: relative;
-  z-index: 5; /* above bgCanvas */
+body {
+  background: radial-gradient(circle at center, #0a0010 0%, #050008 100%);
+  color: white;
+  font-family: "Poppins", sans-serif;
+  margin: 0;
+  height: 100vh;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
-  padding: 20px;
-  flex-direction: column;
-}
-
-/* --- Panel (menu / gameOver) styling to match screenshot --- */
-#menu, #gameOver {
-  width: min(92vw, 740px);
-  max-width: 740px;
-  border-radius: 18px;
-  padding: 36px 40px;
-  text-align: center;
-  background: linear-gradient(180deg, rgba(23,6,30,0.58), rgba(12,3,18,0.56));
-  border: 2px solid rgba(255, 45, 180, 0.12);
-  box-shadow:
-    0 8px 40px rgba(160, 30, 160, 0.08),
-    0 0 48px rgba(200, 40, 200, 0.06),
-    inset 0 0 22px rgba(255, 20, 120, 0.02);
-  backdrop-filter: blur(8px) saturate(110%);
-  margin: 12px auto;
-  transition: transform .28s ease, box-shadow .28s ease;
-}
-
-/* Neon inner border gloss */
-#menu::before, #gameOver::before {
-  content: "";
-  pointer-events: none;
-  position: absolute;
-  inset: -2px;
-  border-radius: 20px;
-  box-shadow: 0 0 36px rgba(255, 50, 170, 0.14);
-  z-index: 0;
-}
-
-/* ensure content sits above pseudo border */
-#menu > * { position: relative; z-index: 1; }
-
-/* Title style */
-#menu h1 {
-  margin: 0 0 10px;
-  font-size: 2.05rem;
-  letter-spacing: -0.02em;
-  color: #ff49d7;
-  text-shadow: 0 8px 36px rgba(255, 66, 170, 0.22), 0 0 8px rgba(255, 66, 170, 0.12);
-  font-weight: 700;
-}
-
-/* description */
-#menu p {
-  margin: 6px 0 18px;
-  color: #e6dff0;
-  opacity: 0.95;
-  line-height: 1.45;
-  font-size: 0.98rem;
-}
-
-/* label */
-#menu label { color: #e8dff8; display:block; margin-bottom:8px; font-weight:600; }
-
-/* dropdown (neon pill) */
-#difficulty {
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-  padding: 10px 44px 10px 14px;
-  border-radius: 12px;
-  border: 1px solid rgba(255,80,200,0.16);
-  background:
-    linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.06)),
-    url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"><polyline points="3,7 10,14 17,7" stroke="%23ff49d7" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>') no-repeat right 12px center;
-  background-size: 18px;
-  color: #fff;
-  font-weight: 600;
-  cursor: pointer;
-  outline: none;
-  transition: transform .18s ease, box-shadow .18s ease;
-  box-shadow: 0 8px 26px rgba(120,20,120,0.04);
-}
-
-/* dropdown focus */
-#difficulty:focus {
-  box-shadow: 0 8px 36px rgba(255,40,180,0.12);
-  transform: translateY(-2px);
-}
-
-/* Neon start button */
-#startBtn {
-  margin-top: 14px;
-  display: inline-block;
-  padding: 12px 28px;
-  border-radius: 12px;
-  border: none;
-  cursor: pointer;
-  color: #fff;
-  font-weight: 700;
-  font-size: 1rem;
-  background: linear-gradient(90deg, #ff49d7 0%, #9b3bff 100%);
-  box-shadow: 0 10px 40px rgba(155, 60, 255, 0.16), 0 0 30px rgba(255, 60, 170, 0.08);
-  transition: transform .18s ease, box-shadow .18s ease;
-}
-
-/* subtle hover */
-#startBtn:hover {
-  transform: translateY(-3px) scale(1.02);
-  box-shadow: 0 16px 56px rgba(155, 60, 255, 0.24), 0 0 42px rgba(255, 60, 170, 0.14);
-}
-
-/* smaller hint text */
-#menu small { display:block; color:#d9cfe6; margin-top:14px; opacity:0.9; }
-
-/* footer */
-#footer {
-  margin-top: 14px;
-  z-index: 6;
-  color: #ddd;
-  font-size: 0.9rem;
-  text-align: center;
-  text-shadow: 0 0 6px rgba(255,50,170,0.06);
-}
-
-/* ensure game canvas sits above bg but below UI */
-#gameCanvas {
-  position: relative;
-  z-index: 3;
-  display: none; /* preserved: JS toggles to block when starting */
-  margin-top: 18px;
-  border-radius: 12px;
   overflow: hidden;
 }
 
-/* gameOver panel uses same neon style */
-#gameOver {
-  display: none; /* shown by your JS on end */
-  width: min(88vw, 640px);
-  margin: 16px auto;
+/* Background snowfall layer */
+#bgCanvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: block !important;
+  background: transparent;
+  z-index: 0;
+  pointer-events: none;
 }
 
-/* Responsive tweaks */
-@media (max-width:520px) {
-  #menu { padding: 22px; border-radius: 14px; }
-  #menu h1 { font-size: 1.6rem; }
-  #difficulty { padding-right: 40px; }
-  #startBtn { width: 85%; padding: 12px; }
+/* Neon main panel */
+#menu, #gameOver {
+  position: relative;
+  z-index: 2;
+  background: rgba(15, 0, 25, 0.55);
+  border: 1.5px solid rgba(255, 0, 170, 0.6);
+  border-radius: 20px;
+  box-shadow:
+    0 0 25px rgba(255, 0, 180, 0.3),
+    0 0 45px rgba(160, 0, 255, 0.2);
+  backdrop-filter: blur(10px) saturate(140%);
+  text-align: center;
+  padding: 40px 50px;
+  transition: all 0.3s ease;
+}
+
+#menu:hover {
+  box-shadow:
+    0 0 30px rgba(255, 0, 200, 0.45),
+    0 0 60px rgba(180, 0, 255, 0.25);
+  transform: scale(1.02);
+}
+
+/* Title */
+#menu h1 {
+  color: #ff4fd8;
+  font-size: 2.2rem;
+  margin-bottom: 10px;
+  text-shadow: 0 0 20px rgba(255, 50, 200, 0.6);
+}
+
+/* Description */
+#menu p {
+  color: #e8dff8;
+  opacity: 0.95;
+  margin-bottom: 25px;
+  line-height: 1.5;
+}
+
+/* Dropdown label */
+#menu label {
+  font-weight: 600;
+  color: #f7caff;
+  display: block;
+  margin-bottom: 8px;
+}
+
+/* Dropdown (custom style) */
+#difficulty {
+  appearance: none;
+  background: linear-gradient(90deg, rgba(50, 0, 70, 0.9), rgba(120, 0, 160, 0.9));
+  border: 1.5px solid rgba(255, 0, 200, 0.4);
+  color: #fff;
+  padding: 10px 40px 10px 15px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.95rem;
+  box-shadow: 0 0 10px rgba(255, 0, 170, 0.25);
+  background-image: url('data:image/svg+xml;utf8,<svg fill="none" stroke="%23ff5ee4" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"></path></svg>');
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  transition: box-shadow 0.3s ease, transform 0.2s ease;
+}
+
+#difficulty:hover, #difficulty:focus {
+  box-shadow: 0 0 25px rgba(255, 0, 200, 0.5);
+  transform: translateY(-2px);
+  outline: none;
+}
+
+/* Neon Start Button */
+#startBtn {
+  margin-top: 20px;
+  background: linear-gradient(90deg, #ff33cc, #9900ff);
+  border: none;
+  color: white;
+  padding: 12px 30px;
+  border-radius: 30px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 0 25px rgba(255, 0, 170, 0.5);
+  transition: all 0.25s ease;
+}
+
+#startBtn:hover {
+  background: linear-gradient(90deg, #ff4fd8, #b066ff);
+  box-shadow:
+    0 0 35px rgba(255, 0, 200, 0.7),
+    0 0 50px rgba(160, 0, 255, 0.5);
+  transform: translateY(-3px) scale(1.05);
+}
+
+/* Footer */
+#footer {
+  color: #bbb;
+  font-size: 0.9rem;
+  margin-top: 20px;
+  text-align: center;
+  z-index: 3;
+}
+
+#footer a {
+  color: #ff49d7;
+  text-decoration: none;
+}
+
+#footer a:hover {
+  text-shadow: 0 0 10px #ff49d7;
+}
+
+/* Hide game canvas by default */
+#gameCanvas {
+  display: none;
+  margin-top: 25px;
+  border-radius: 10px;
+  border: 1.5px solid rgba(255, 0, 200, 0.3);
+  box-shadow: 0 0 20px rgba(255, 0, 200, 0.2);
+  z-index: 2;
+}
+
+/* Game over panel */
+#gameOver {
+  display: none;
+  background: rgba(20, 0, 40, 0.65);
+  border: 1.5px solid rgba(255, 0, 180, 0.6);
+  box-shadow: 0 0 35px rgba(255, 0, 180, 0.4);
+  padding: 40px 50px;
+  border-radius: 20px;
+  z-index: 3;
 }
