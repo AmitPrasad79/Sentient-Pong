@@ -177,9 +177,9 @@ document.addEventListener("DOMContentLoaded", () => {
   startBtn.addEventListener("click", () => {
     difficulty = difficultySelect.value;
 
-    if (difficulty === "easy") aiPaddleHeight = 100;
+    if (difficulty === "easy") aiPaddleHeight = 60;
     else if (difficulty === "normal") aiPaddleHeight = 80;
-    else if (difficulty === "hard") aiPaddleHeight = 60;
+    else if (difficulty === "hard") aiPaddleHeight = 100;
 
     resetPaddles();
     menu.classList.add("hidden");
