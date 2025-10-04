@@ -16,15 +16,12 @@
        If it goes out on either side, you lose!
     </p>
 
-    <label>Choose Difficulty:</label>
-    <div class="custom-select" id="difficultySelect">
-      <div class="selected" data-value="easy">Easy</div>
-      <div class="options">
-        <div class="option" data-value="easy">Easy</div>
-        <div class="option" data-value="normal">Normal</div>
-        <div class="option" data-value="hard">Hard</div>
-      </div>
-    </div>
+    <label for="difficulty">Choose Difficulty:</label>
+    <select id="difficulty">
+      <option value="easy" selected>Easy</option>
+      <option value="normal">Normal</option>
+      <option value="hard">Hard</option>
+    </select>
 
     <br/><br/>
     <button id="startBtn">Start Game</button>
