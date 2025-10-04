@@ -2,42 +2,37 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>🏓 Sentient Pong</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sentient Pong</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <!-- Background canvas -->
+  <!-- Background falling senti.png -->
   <canvas id="bgCanvas"></canvas>
 
-  <!-- Main Menu -->
+  <!-- Menu -->
   <div id="menu">
     <h1>🏓 Sentient Pong</h1>
     <p><strong>How to Play:</strong><br>
-      The ball bounces off the top and bottom walls.<br>
-      Keep it alive as long as possible!<br>
-      If it goes out of the left or right side, you lose.<br>
-      Score = survival time.
+       The ball bounces off the top and bottom walls.<br>
+       Keep it alive as long as possible!<br>
+       If it goes out of the left or right side, you lose.<br>
+       Score = survival time.
     </p>
-
-    <label>Choose Difficulty:</label>
-    <div class="custom-select" id="difficultySelect">
-      <div class="selected" data-value="easy">Easy</div>
-      <div class="options">
-        <div class="option" data-value="easy">Easy</div>
-        <div class="option" data-value="normal">Normal</div>
-        <div class="option" data-value="hard">Hard</div>
-      </div>
-    </div>
-
-    <br /><br />
+    <label for="difficulty">Choose Difficulty:</label>
+    <select id="difficulty">
+      <option value="easy" selected>Easy</option>
+      <option value="normal">Normal</option>
+      <option value="hard">Hard</option>
+    </select>
+    <br/><br/>
     <button id="startBtn">Start Game</button>
   </div>
 
   <!-- Game Canvas -->
   <canvas id="gameCanvas" width="800" height="500"></canvas>
 
-  <!-- Game Over Screen -->
+  <!-- Game Over -->
   <div id="gameOver" class="hidden">
     <h2 id="winner"></h2>
     <button id="restartBtn">Play Again</button>
