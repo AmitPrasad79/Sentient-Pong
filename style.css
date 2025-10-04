@@ -52,3 +52,7 @@ button:hover {
   z-index: -1; 
   background: #111; 
 }
+
+#bgCanvas {
+  display: block; /* make sure snowfall is always visible */
+}
