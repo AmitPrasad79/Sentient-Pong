@@ -1,77 +1,182 @@
-/* MENU STYLING */
+/* ===== Base Page Setup ===== */
 body {
   margin: 0;
   padding: 0;
-  background-color: #000;
-  color: #fff;
-  font-family: 'Poppins', sans-serif;
   overflow: hidden;
+  background: radial-gradient(circle at top, #0d0d0d 0%, #000 100%);
+  color: #fff;
+  font-family: "Poppins", sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
 }
 
+/* ===== Background Canvas ===== */
+#bgCanvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
+/* ===== Menu Section ===== */
 #menu {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: linear-gradient(145deg, #ff6fd8, #9b5eff);
-  padding: 40px 70px;
-  border-radius: 25px;
-  box-shadow: 0 0 40px rgba(255, 105, 180, 0.4), 0 0 80px rgba(155, 94, 255, 0.2);
+  z-index: 2;
   text-align: center;
-  color: #fff;
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(12px);
+  background: rgba(25, 25, 25, 0.85);
+  border: 2px solid #ff66a3;
+  border-radius: 16px;
+  padding: 30px 40px;
+  box-shadow: 0 0 20px rgba(255, 102, 163, 0.5);
+  max-width: 400px;
 }
 
 #menu h1 {
-  font-size: 42px;
-  font-weight: 800;
   margin-bottom: 20px;
-  color: #fff;
-  text-shadow: 0 0 15px #ffb3ec, 0 0 30px #c99fff;
+  color: #ff66a3;
+  font-size: 2em;
+  text-shadow: 0 0 10px #ff66a3;
 }
 
 #menu p {
-  font-size: 16px;
-  line-height: 1.6;
-  margin-bottom: 12px;
-  color: rgba(255, 255, 255, 0.9);
+  font-size: 14px;
+  line-height: 1.4;
+  color: #eee;
 }
 
-#menu select {
-  font-size: 16px;
-  padding: 8px 14px;
-  border-radius: 10px;
-  border: none;
-  background: rgba(255, 255, 255, 0.15);
-  color: #fff;
+/* ===== Custom Dropdown ===== */
+.custom-select {
+  position: relative;
+  display: inline-block;
+  width: 200px;
   margin-top: 10px;
+  user-select: none;
+}
+
+.selected {
+  background: #222;
+  color: #ff66a3;
+  padding: 10px;
+  border: 1px solid #ff66a3;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: center;
   transition: background 0.3s;
 }
-#menu select:hover {
-  background: rgba(255, 255, 255, 0.25);
+
+.selected:hover {
+  background: #333;
 }
 
-/* BUTTON */
-/* Start & Restart Buttons */
-#menu button,
-#gameOver button {
-  margin-top: 25px;
-  padding: 12px 34px;
-  font-size: 18px;
-  border-radius: 12px;
-  border: none;
+.options {
+  display: none;
+  position: absolute;
+  top: 45px;
+  width: 100%;
+  background: #222;
+  border: 1px solid #ff66a3;
+  border-radius: 8px;
+  overflow: hidden;
+  z-index: 3;
+}
+
+.option {
+  padding: 10px;
   cursor: pointer;
+  text-align: center;
   color: #fff;
-  font-weight: 600;
-  background: linear-gradient(90deg, #ff6fd8, #9b5eff);
-  box-shadow: 0 0 25px rgba(255, 105, 180, 0.4);
-  transition: all 0.3s ease;
 }
 
-#menu button:hover,
-#gameOver button:hover {
-  transform: scale(1.07);
-  background: linear-gradient(90deg, #ff8fd8, #b57aff);
-  box-shadow: 0 0 40px rgba(255, 105, 180, 0.6);
+.option:hover {
+  background: #ff66a3;
+  color: #000;
 }
+
+/* ===== Buttons ===== */
+button {
+  background: #ff66a3;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 24px;
+  font-size: 16px;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(255, 102, 163, 0.4);
+  transition: all 0.25s ease;
+}
+
+button:hover {
+  background: #ff3385;
+  transform: scale(1.05);
+}
+
+/* ===== Game Canvas ===== */
+#gameCanvas {
+  display: none;
+  border: 3px solid #ff66a3;
+  border-radius: 16px;
+  box-shadow: 0 0 25px rgba(255, 102, 163, 0.6);
+  background: #111;
+  z-index: 1;
+}
+
+/* ===== Game Over Screen ===== */
+#gameOver {
+  text-align: center;
+  background: rgba(20, 20, 20, 0.9);
+  border: 2px solid #ff66a3;
+  border-radius: 16px;
+  padding: 30px 40px;
+  box-shadow: 0 0 20px rgba(255, 102, 163, 0.5);
+  z-index: 3;
+}
+
+#gameOver h2 {
+  font-size: 2em;
+  color: #ff66a3;
+  text-shadow: 0 0 10px #ff66a3;
+  margin-bottom: 20px;
+}
+
+/* ===== Footer ===== */
+#footer {
+  position: fixed;
+  bottom: 15px;
+  font-size: 14px;
+  text-align: center;
+  color: #aaa;
+  z-index: 2;
+}
+
+#footer a {
+  color: #ff66a3;
+  text-decoration: none;
+}
+
+#footer a:hover {
+  text-decoration: underline;
+}
+
+/* ===== Hidden Utility ===== */
+.hidden {
+  display: none !important;
+}
+
+/* ===== Smooth Fade Animation ===== */
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.98); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+#menu, #gameOver {
+  animation: fadeIn 0.4s ease forwards;
+}
+
+.hidden {
+  display: none;
+}
+
