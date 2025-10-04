@@ -9,23 +9,20 @@ window.addEventListener("resize", resizeBg);
 resizeBg();
 
 const img = new Image();
-img.src = "./assets/sentient.png"; // your transparent pink ball
-
+img.src = "./assets/sentient.png"; 
 let balls = [];
 
-// Create a single ball
 function createBall() {
   balls.push({
     x: Math.random() * bgCanvas.width,
     y: -50,
-    size: Math.random() * 40 + 25,  // slightly random size
+    size: Math.random() * 40 + 25, 
     speed: Math.random() * 1.2 + 0.3,
     rotation: Math.random() * 360,
     rotationSpeed: Math.random() * 0.6 - 0.3,
   });
 }
 
-// Instead of a storm — only 5–6 balls total at a time
 setInterval(() => {
   if (balls.length < 6) createBall();
 }, 800);
