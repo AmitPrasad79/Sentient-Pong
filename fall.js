@@ -1,5 +1,5 @@
 const bgCanvas = document.getElementById("bgCanvas");
-const ctx2 = bgCanvas.getContext("2d");
+const ctx = bgCanvas.getContext("2d");
 
 function resizeBg() {
   bgCanvas.width = window.innerWidth;
@@ -8,36 +8,46 @@ function resizeBg() {
 window.addEventListener("resize", resizeBg);
 resizeBg();
 
+const img = new Image();
+img.src = "./assets/sentient.png"; // your transparent pink ball
+
 let balls = [];
 
+// Create a single ball
 function createBall() {
   balls.push({
     x: Math.random() * bgCanvas.width,
-    y: -20,
-    size: Math.random() * 8 + 4,
-    speed: Math.random() * 1 + 0.5,
-    alpha: Math.random() * 0.8 + 0.2
+    y: -50,
+    size: Math.random() * 40 + 25,  // slightly random size
+    speed: Math.random() * 1.2 + 0.3,
+    rotation: Math.random() * 360,
+    rotationSpeed: Math.random() * 0.6 - 0.3,
   });
 }
 
-// create 5–6 new balls every ~500ms instead of all at once
+// Instead of a storm — only 5–6 balls total at a time
 setInterval(() => {
-  for (let i = 0; i < 5; i++) createBall();
-}, 500);
+  if (balls.length < 6) createBall();
+}, 800);
+
+function drawBall(b) {
+  ctx.save();
+  ctx.translate(b.x, b.y);
+  ctx.rotate((b.rotation * Math.PI) / 180);
+  ctx.globalAlpha = 0.85;
+  ctx.drawImage(img, -b.size / 2, -b.size / 2, b.size, b.size);
+  ctx.restore();
+}
 
 function update() {
-  ctx2.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
-  ctx2.fillStyle = "rgba(255, 105, 180, 0.8)";
-  balls.forEach(b => {
-    ctx2.globalAlpha = b.alpha;
-    ctx2.beginPath();
-    ctx2.arc(b.x, b.y, b.size, 0, Math.PI * 2);
-    ctx2.fill();
+  ctx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+  for (let b of balls) {
     b.y += b.speed;
-  });
-
-  // remove off-screen balls
-  balls = balls.filter(b => b.y < bgCanvas.height + 20);
+    b.rotation += b.rotationSpeed;
+    drawBall(b);
+  }
+  balls = balls.filter(b => b.y < bgCanvas.height + 50);
   requestAnimationFrame(update);
 }
+
 update();
