@@ -180,3 +180,34 @@ button:hover {
   display: none;
 }
 
+/* ===== Menu Section (rectangle look) ===== */
+#menu {
+  z-index: 2;
+  text-align: center;
+  background: rgba(25, 25, 25, 0.85);
+  border: 2px solid #ff66a3;
+  border-radius: 10px; /* less round = more rectangular */
+  padding: 40px 60px; /* a bit wider */
+  box-shadow: 0 0 25px rgba(255, 102, 255, 0.5);
+  max-width: 500px; /* slightly wider */
+}
+
+/* ===== Buttons (gradient + glow) ===== */
+button {
+  background: linear-gradient(90deg, #ff66a3, #b266ff);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 14px 34px;
+  font-size: 17px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 0 20px rgba(255, 102, 255, 0.4);
+  transition: all 0.25s ease;
+}
+
+button:hover {
+  background: linear-gradient(90deg, #ff85c1, #c18cff);
+  transform: scale(1.08);
+  box-shadow: 0 0 35px rgba(255, 102, 255, 0.6);
+}
