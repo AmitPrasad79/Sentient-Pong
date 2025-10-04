@@ -7,13 +7,13 @@ const restartBtn = document.getElementById("restartBtn");
 const gameOverScreen = document.getElementById("gameOver");
 const winnerText = document.getElementById("winner");
 
-let difficulty = "easy";            
+let difficulty = "easy";
 let gameRunning = false;
 let countdown = 0;
 
 const paddleWidth = 15;
 const playerPaddleHeight = 80;
-let aiPaddleHeight = 60;            
+let aiPaddleHeight = 60;
 let leftPaddleY = 0;
 let rightPaddleY = 0;
 
@@ -121,7 +121,7 @@ function draw() {
 
   if (ballX <= paddleWidth && ballY + ballSize >= leftPaddleY && ballY <= leftPaddleY + playerPaddleHeight) {
     ballX = paddleWidth;
-    ballSpeedX = Math.abs(ballSpeedX) * 1.05; 
+    ballSpeedX = Math.abs(ballSpeedX) * 1.05;
     ballSpeedY += (Math.random() - 0.5) * 1.2;
   }
 
@@ -140,7 +140,6 @@ function draw() {
   if ((keys["s"] || keys["arrowdown"]) && leftPaddleY + playerPaddleHeight < canvas.height) leftPaddleY += step;
   leftPaddleY = Math.max(0, Math.min(leftPaddleY, canvas.height - playerPaddleHeight));
 
-  // --- AI movement (no prediction, smooth) ---
   let aiSpeed = difficulty === "easy" ? 3 : difficulty === "normal" ? 5 : 7;
   const aiCenter = rightPaddleY + aiPaddleHeight / 2;
   if (aiCenter < ballY + ballSize/2 - 10) rightPaddleY += aiSpeed;
@@ -173,13 +172,13 @@ function startCountdownAndRun() {
   step();
 }
 
+// ✅ Updated Start Button for custom dropdown
 startBtn.addEventListener("click", () => {
-  const select = document.getElementById("difficulty");
-  difficulty = select.value;
+  const selected = document.querySelector(".custom-select .selected");
+  difficulty = selected?.dataset.value || "easy";
 
-  if (difficulty === "easy") aiPaddleHeight = 60;
-  else if (difficulty === "normal") aiPaddleHeight = 80;
-  else if (difficulty === "hard") aiPaddleHeight = 100;
+  // Adjust AI paddle height per difficulty
+  aiPaddleHeight = difficulty === "easy" ? 60 : difficulty === "normal" ? 80 : 100;
 
   leftScore = 0;
   rightScore = 0;
