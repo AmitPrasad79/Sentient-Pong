@@ -1,4 +1,13 @@
 /* MENU STYLING */
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #000;
+  color: #fff;
+  font-family: 'Poppins', sans-serif;
+  overflow: hidden;
+}
+
 #menu {
   position: absolute;
   top: 50%;
