@@ -2,70 +2,54 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Sentient Pong</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🏓 Sentient Pong</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <!-- Background canvas -->
   <canvas id="bgCanvas"></canvas>
+
+  <!-- Main Menu -->
   <div id="menu">
     <h1>🏓 Sentient Pong</h1>
     <p><strong>How to Play:</strong><br>
-       The ball bounces off the top and bottom walls.<br>
-       Keep it alive as long as possible!<br>
-       If it goes out of the left or right side, you lose.<br>
-       Score = survival time.
+      The ball bounces off the top and bottom walls.<br>
+      Keep it alive as long as possible!<br>
+      If it goes out of the left or right side, you lose.<br>
+      Score = survival time.
     </p>
-  <label>Choose Difficulty:</label>
-    <div class="custom-select" id="difficultySelect">
-    <div class="selected">Easy</div>
-    <div class="options">
-    <div class="option" data-value="easy">Easy</div>
-    <div class="option" data-value="normal">Normal</div>
-    <div class="option" data-value="hard">Hard</div>
-    </div>
-  </div>
 
-    <br/><br/>
+    <label>Choose Difficulty:</label>
+    <div class="custom-select" id="difficultySelect">
+      <div class="selected" data-value="easy">Easy</div>
+      <div class="options">
+        <div class="option" data-value="easy">Easy</div>
+        <div class="option" data-value="normal">Normal</div>
+        <div class="option" data-value="hard">Hard</div>
+      </div>
+    </div>
+
+    <br /><br />
     <button id="startBtn">Start Game</button>
   </div>
+
+  <!-- Game Canvas -->
   <canvas id="gameCanvas" width="800" height="500"></canvas>
+
+  <!-- Game Over Screen -->
   <div id="gameOver" class="hidden">
     <h2 id="winner"></h2>
     <button id="restartBtn">Play Again</button>
   </div>
+
+  <!-- Footer -->
   <div id="footer">
     Made with ❤️ by <a href="https://twitter.com/0xBalls" target="_blank">@0xBalls</a>
   </div>
+
+  <!-- Scripts -->
   <script src="fall.js"></script>
   <script src="game.js"></script>
-  <script>
-document.addEventListener("DOMContentLoaded", () => {
-  const selected = document.querySelector(".selected");
-  const optionsContainer = document.querySelector(".options");
-  const optionsList = document.querySelectorAll(".option");
-
-  selected.addEventListener("click", () => {
-    optionsContainer.style.display =
-      optionsContainer.style.display === "block" ? "none" : "block";
-  });
-
-  optionsList.forEach(o => {
-    o.addEventListener("click", () => {
-      selected.textContent = o.textContent;
-      optionsContainer.style.display = "none";
-      selected.dataset.value = o.dataset.value;
-      localStorage.setItem("difficulty", o.dataset.value); // optional
-    });
-  });
-
-  document.addEventListener("click", (e) => {
-    if (!e.target.closest(".custom-select")) {
-      optionsContainer.style.display = "none";
-    }
-  });
-});
-</script>
-
 </body>
 </html>
