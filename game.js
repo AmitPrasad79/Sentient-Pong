@@ -10,11 +10,12 @@ const difficultySelect = document.getElementById("difficulty");
 
 let playerY, aiY, ballX, ballY, ballSpeedX, ballSpeedY;
 let paddleWidth = 10;
-let playerHeight = 100;
-let aiHeight = 100;
-let aiSpeed = 5;
-let ballBaseSpeed = 4;
+let playerHeight;
+let aiHeight;
+let aiSpeed;
+let ballBaseSpeed;
 let ballRadius = 8;
+
 let upPressed = false;
 let downPressed = false;
 let scorePlayer = 0;
@@ -23,12 +24,12 @@ let gamesPlayed = 0;
 let running = false;
 let difficulty = "easy";
 
-// ===== Difficulty Settings =====
+// ✅ Difficulty setup
 function setDifficulty(level) {
   difficulty = level;
   if (level === "easy") {
-    playerHeight = 130;  // You: big paddle
-    aiHeight = 70;       // AI: small paddle
+    playerHeight = 130;  // YOU larger
+    aiHeight = 70;       // AI smaller
     aiSpeed = 3;
     ballBaseSpeed = 3;
   } else if (level === "normal") {
@@ -37,29 +38,33 @@ function setDifficulty(level) {
     aiSpeed = 5;
     ballBaseSpeed = 4;
   } else if (level === "hard") {
-    playerHeight = 70;   // You: small paddle
-    aiHeight = 130;      // AI: big paddle
+    playerHeight = 70;   // YOU smaller
+    aiHeight = 130;      // AI larger
     aiSpeed = 7;
     ballBaseSpeed = 5;
   }
 }
 
-// ===== Initialize Game =====
+// ✅ Initialize Game
 function initGame() {
+  setDifficulty(difficulty); // Ensure correct sizes before start
+
   playerY = canvas.height / 2 - playerHeight / 2;
   aiY = canvas.height / 2 - aiHeight / 2;
   ballX = canvas.width / 2;
   ballY = canvas.height / 2;
   ballSpeedX = Math.random() < 0.5 ? ballBaseSpeed : -ballBaseSpeed;
   ballSpeedY = (Math.random() - 0.5) * 4;
+
   running = true;
   gameOverScreen.classList.add("hidden");
   menu.classList.add("hidden");
   canvas.style.display = "block";
+
   draw();
 }
 
-// ===== Event Listeners =====
+// ✅ Event Listeners
 startBtn.addEventListener("click", () => {
   const selectedDifficulty = difficultySelect.value;
   setDifficulty(selectedDifficulty);
@@ -80,7 +85,7 @@ document.addEventListener("keyup", (e) => {
   if (e.key === "ArrowDown") downPressed = false;
 });
 
-// ===== Game Loop =====
+// ✅ Game Loop
 function draw() {
   if (!running) return;
 
@@ -88,16 +93,16 @@ function draw() {
   ctx.fillStyle = "#111";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // Draw Score
+  // Score Display
   ctx.fillStyle = "#fff";
   ctx.font = "16px Poppins";
   ctx.fillText(`Games: ${gamesPlayed} | Wins: ${scorePlayer} | AI: ${scoreAI}`, 400 - 100, 30);
 
-  // Player paddle (left)
+  // Player paddle (LEFT)
   ctx.fillStyle = "#ff66a3";
   ctx.fillRect(10, playerY, paddleWidth, playerHeight);
 
-  // AI paddle (right)
+  // AI paddle (RIGHT)
   ctx.fillStyle = "#a966ff";
   ctx.fillRect(canvas.width - paddleWidth - 10, aiY, paddleWidth, aiHeight);
 
@@ -107,7 +112,7 @@ function draw() {
   ctx.fillStyle = "#ff66a3";
   ctx.fill();
 
-  // Ball Movement
+  // Ball movement
   ballX += ballSpeedX;
   ballY += ballSpeedY;
 
@@ -120,16 +125,14 @@ function draw() {
   if (upPressed && playerY > 0) playerY -= 7;
   if (downPressed && playerY + playerHeight < canvas.height) playerY += 7;
 
-  // AI movement (smooth tracking)
+  // AI tracking (smooth)
   const aiCenter = aiY + aiHeight / 2;
   if (aiCenter < ballY - 20) aiY += aiSpeed;
   else if (aiCenter > ballY + 20) aiY -= aiSpeed;
 
-  // Keep AI inside bounds
   aiY = Math.max(0, Math.min(canvas.height - aiHeight, aiY));
 
-  // Collision with paddles
-  // Left paddle (Player)
+  // Player collision
   if (
     ballX - ballRadius < 10 + paddleWidth &&
     ballY > playerY &&
@@ -140,7 +143,7 @@ function draw() {
     ballSpeedY = deltaY * 0.25;
   }
 
-  // Right paddle (AI)
+  // AI collision
   if (
     ballX + ballRadius > canvas.width - paddleWidth - 10 &&
     ballY > aiY &&
@@ -151,7 +154,7 @@ function draw() {
     ballSpeedY = deltaY * 0.25;
   }
 
-  // Check scoring
+  // Scoring
   if (ballX - ballRadius < 0) {
     scoreAI++;
     gamesPlayed++;
@@ -165,7 +168,7 @@ function draw() {
   requestAnimationFrame(draw);
 }
 
-// ===== End Game =====
+// ✅ End Game
 function endGame(result) {
   running = false;
   winnerText.textContent = result;
