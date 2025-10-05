@@ -9,14 +9,14 @@ window.addEventListener("resize", resizeBg);
 resizeBg();
 
 const img = new Image();
-img.src = "./assets/sentient.png"; 
+img.src = "./assets/sentient.png";
 let balls = [];
 
 function createBall() {
   balls.push({
     x: Math.random() * bgCanvas.width,
     y: -50,
-    size: Math.random() * 40 + 25, 
+    size: Math.random() * 40 + 25,
     speed: Math.random() * 1.2 + 0.3,
     rotation: Math.random() * 360,
     rotationSpeed: Math.random() * 0.6 - 0.3,
@@ -47,4 +47,7 @@ function update() {
   requestAnimationFrame(update);
 }
 
-update();
+// ✅ Start animation only after image is fully loaded
+img.onload = () => {
+  update();
+};
